@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Vehicle Classification
+{% endblock %}
+
+{% block page_title %}
+    <div data-page-title>Vehicle Classification</div>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Vehicle Classification</span>
+            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addClassification()">Add Classification</button>
+        </div>
+
+        <div class="card-body">
+            <table id="teamMemberRolesTable" class="table table-striped table-bordered table-hover paginated">
+                <thead>
+                    <tr>
+                        <th style="width: 5%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">#</th> <!-- Row number column -->
+                        <th style="">Vehicle Classification</th>
+                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Classification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for classification in classifications %}
+                    <tr>
+                        <td style="width: 5%; white-space: nowrap; text-align: left;">{{ loop.index }}</td> <!-- Display row number -->
+                        <td style="">{{ classification.name }}</td>
+                        <td style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">
+                            <button class="btn-outline-custom edit-classification-btn" style="float: right;" type="button" data-classification-id="{{ classification.id }}" data-classification-name="{{ classification.name }}">Edit</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td></td>
+                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No vehicle classification found.</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    
+// =====================================
+// Validation Rules
+// =====================================
+
+window.textAreaRegexClassification = /^[A-Za-z0-9\s,.'#/\-]{3,255}$/;
+
+function showValidationErrorClassification($field, message) {
+
+    clearValidationErrorClassification($field);
+
+    $field.addClass("is-invalid");
+
+    $field.after(`
+        <div class="text-danger validation-error small">
+            ${message}
+        </div>
+    `);
+}
+
+function clearValidationErrorClassification($field) {
+
+    $field.removeClass("is-invalid");
+
+    $field.parent().find(".validation-error").remove();
+}
+
+function validateFieldClassification(selector, regex, message) {
+
+    const $field = $(selector);
+
+    const value = $field.val().trim();
+
+    clearValidationErrorClassification($field);
+
+    // Empty values are allowed
+    if (value === "") {
+        return true;
+    }
+
+    if (!regex.test(value)) {
+        showValidationErrorClassification(
+            $field,
+            message
+        );
+        return false;
+    }
+    return true;
+}
+
+window.validationFieldsClassification =
+window.validationFieldsClassification || [
+    {
+        selector: "#vehicleClassificationName",
+        message: "Vehicle classification name contains invalid characters."
+    },
+    {
+        selector: "#vehicle_classification_name_2",
+        message: "Vehicle classification name contains invalid characters."
+    },
+];
+
+// =========================
+// Real-time Validation
+// =========================
+window.validationFieldsClassification.forEach(field => {
+
+    $(document).on("input blur", field.selector, function () {
+
+        const value = $(this).val().trim();
+
+        // Clear previous error
+        clearValidationErrorClassification($(this));
+
+        // Don't show an error while the field is empty.
+        // The required validation will occur when the user clicks Add/Update.
+        if (value === "") {
+            return;
+        }
+
+        validateFieldClassification(
+            field.selector,
+            window.textAreaRegexClassification,
+            field.message
+        );
+    });
+});
+
+function validateClassificationForm(actionType) {
+
+    let fields = [];
+
+    if (actionType === "add vehicle classification") {
+
+        fields = [{
+            selector: "#vehicleClassificationName",
+            message: "Vehicle classification name contains invalid characters."
+        }];
+
+    } else if (actionType === "edit vehicle classification") {
+
+        fields = [{
+            selector: "#vehicle_classification_name_2",
+            message: "Vehicle classification name contains invalid characters."
+        }];
+    }
+
+    let isValid = true;
+
+    fields.forEach(field => {
+
+        const $field = $(field.selector);
+        const value = $field.val().trim();
+
+        clearValidationErrorClassification($field);
+
+        if (value === "") {
+
+            showValidationErrorClassification(
+                $field,
+                "Vehicle Colour Name cannot be left blank."
+            );
+
+            isValid = false;
+            return;
+        }
+
+        if (!validateFieldClassification(
+                field.selector,
+                window.textAreaRegexClassification,
+                field.message
+        )) {
+            isValid = false;
+        }
+    });
+    return isValid;
+}
+
+    function showFlashMessage(message, type) {
+        let title = "Notification"; // Default title
+
+        if (type === "danger") {
+            title = "Error";
+        } else if (type === "success") {
+            title = "Success";
+        } else if (type === "warning") {
+            title = "Warning";
+        }
+
+        $("#flashMessageTitle").text(title);
+        $("#flashMessageBody").html(message);
+        $("#flashMessageModal").modal("show");
+    }
+
+    function addClassification() {
+        // Open the modal
+        $("#vehicleClassificationAddModal").modal("show");
+    }
+
+    function showVehicleClassificationConfirmation(actionType) {
+        if (
+            (actionType === "add vehicle classification" ||
+             actionType === "edit vehicle classification") &&
+            !validateClassificationForm(actionType)
+        ) {
+            return;
+        }
+
+        let modalTitle = "";
+        let modalMessage = "";
+
+        switch (actionType) {
+            case "add vehicle classification":
+                modalTitle = "Confirm Addition of Vehicle Colour";
+                modalMessage = "Are you sure you want to add this vehicle classification?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    registerVehicleClassification();
+                });
+                break;
+
+            case "edit vehicle classification":
+                modalTitle = "Confirm Update of Vehicle Colour";
+                modalMessage = "Are you sure you want to edit this vehicle colour?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    updateVehicleClassification();
+                });
+                break;
+
+             default:
+                modalTitle = "Confirmation";
+                modalMessage = "Are you sure you want to proceed?";
+        }
+
+        $("#confirmationModalLabel").text(modalTitle);
+        $("#confirmationMessage").text(modalMessage);
+
+        $("#confirmationModal").modal({
+            backdrop: true,
+            keyboard: false
+        });
+
+        // Wait for Bootstrap to insert backdrop, then adjust z-index
+        setTimeout(function () {
+            $('.modal-backdrop').last().addClass('confirmation-backdrop');
+        }, 10);
+    }
+
+    function registerVehicleClassification() {
+
+        const form = document.getElementById("addVehicleClassificationForm");
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = {
+            vehicle_classification_name: $("#vehicleClassificationName").val().trim(),
+        };
+
+        // Step 1: Check if vehicle classification name already exists
+        $.ajax({
+            url: `/check-vehicle-classification-name/${encodeURIComponent(formData.vehicle_classification_name)}`,
+            type: "GET",
+            success: function (response) {
+                if (response.exists) {
+                    showFlashMessage(`Vehicle classification name, '${formData.vehicle_classification_name}' already exists.`, "warning");
+                    return;
+                }
+
+                // Step 2: Submit country
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                $.ajax({
+                    url: "/admin-register-new-vehicle-classification",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: {"X-CSRFToken": csrfToken},
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        $("#addVehicleClassificationForm")[0].reset();
+                        $("#vehicleClassificationAddModal").modal("hide");
+                        showFlashMessage(response.message, "success");
+                        $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                        $(".content").load(location.href + " .content > *", function() {
+                            initializeRoleDataTable();
+                        });
+                });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = xhr.responseJSON?.error || "An unexpected error occurred.";
+                        let messageType = xhr.responseJSON?.type || "danger";
+                        showFlashMessage(errorMessage, messageType);
+                    }
+                });
+            },
+            error: function () {
+                showFlashMessage("Failed to validate name of vehicle classification. Please contact your System Administrator.", "danger");
+            }
+        });
+    }
+
+    function updateVehicleClassification() {
+        const form = document.getElementById("vehicleClassificationEditModal");
+
+        const vehicle_classification_id = $("#editVehicleClassificationId").val();
+        const formData = {
+            vehicle_classification_id: vehicle_classification_id,
+            vehicle_classification_name_2: $("#vehicle_classification_name_2").val(),
+        };
+
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+        $.ajax({
+            url: "/admin-update-vehicle-classification",
+            type: "POST",
+            contentType: "application/json",
+            headers: {"X-CSRFToken": csrfToken},
+            data: JSON.stringify(formData),
+            success: function (response) {
+                $("#vehicleClassificationEditModal").modal("hide");
+                showFlashMessage(response.message, "success");
+                $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                    $(".content").load(location.href + " .content > *", function() {
+                        initializeRoleDataTable();
+                    });
+                });
+            },
+            error: function (xhr) {
+                let errorMessage = xhr.responseJSON?.error || "An error occurred while updating the vehicle classification.";
+                let messageType = xhr.responseJSON?.type || "danger";
+                showFlashMessage(errorMessage, messageType);
+            }
+        });
+    }
+
+    $(document).off("click", ".edit-classification-btn").on("click", ".edit-classification-btn", function () {
+
+        const classification_id = $(this).data('classification-id');
+
+        $.ajax({
+            url: "/get-vehicle-classification-details",
+            type: "GET",
+            data: {  classification_id: classification_id  },
+            success: function (data) {
+                // Populate modal fields
+                $("#vehicle_classification_name_2").val(data.classification_name);
+
+                // Store ID in form using jQuery data
+                $("#editVehicleClassificationId").val(data.id);
+
+                // Show the modal
+                $("#vehicleClassificationEditModal").modal("show");
+            },
+            error: function () {
+                showFlashMessage("Failed to load vehicle classification details. Please contact your System Administrator.", "danger");
+            }
+        });
+    });
+
+    function initializeRoleDataTable() {
+        $('#teamMemberRolesTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            lengthMenu: [5, 10, 25, 50, 100],
+            pageLength: 10,
+            destroy: true, // <-- Important to allow reinitialization
+            dom: '<"row"<"col-md-6"l><"col-md-6"f>>' +
+                 '<"row"<"col-md-12"B>>' +
+                 '<"row"<"col-md-12"t>>' +
+                 '<"row"<"col-md-6"i><"col-md-6"p>>',
+            buttons: [
+                { extend: 'copy', text: 'Copy', className: 'btn btn-secondary' },
+                { extend: 'csv', text: 'Export to CSV', className: 'btn btn-secondary' },
+                { extend: 'excel', text: 'Export to Excel', className: 'btn btn-secondary' },
+                { extend: 'pdf', text: 'Export to PDF', className: 'btn btn-secondary' },
+                { extend: 'print', text: 'Print', className: 'btn btn-secondary' }
+            ],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    }
+
+   $(document).ready(function() {
+        initializeRoleDataTable()
+
+        // Handle "Close" button click
+        $("#closeViewRequest").click(function() {
+            $("#viewRequestCard").slideUp();
+        });
+    });
+
+    $(document).off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        if ($('.modal.show').length > 0) {
+            // Keep 'modal-open' if any modal is still open
+            $('body').addClass('modal-open');
+        }
+    });
+
+</script>
+
+<style>
+    #confirmationModal {
+        z-index: 1060; /* Higher than default Bootstrap modal (1050) */
+    }
+
+    /* Ensure backdrop covers roleModal when confirmationModal is active */
+    .modal-backdrop.confirmation-backdrop {
+        z-index: 1055; /* Between roleModal and confirmationModal */
+    }
+</style>
+
+    {% include 'includes/vehicle_classification_add_modal.html' %}
+    {% include 'includes/vehicle_classification_edit_modal.html' %}
+
+{% endblock %}

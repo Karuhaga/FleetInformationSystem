@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Country of Origin
+    Vehicle Body Description
 {% endblock %}
 
 {% block page_title %}
-    <div data-page-title>Country of Origin</div>
+    <div data-page-title>Vehicle Body Description</div>
 {% endblock %}
 
 
@@ -13,8 +13,8 @@
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Country of Origin</span>
-            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addCountry()">Add Country</button>
+            <span>Vehicle Body Description</span>
+            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addVehicleBodyDescription()">Add Description</button>
         </div>
 
         <div class="card-body">
@@ -22,23 +22,23 @@
                 <thead>
                     <tr>
                         <th style="width: 5%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">#</th> <!-- Row number column -->
-                        <th style="">Country</th>
-                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Country</th>
+                        <th style="">Body Description</th>
+                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Description</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for country in countries %}
+                    {% for description in body_descriptions %}
                     <tr>
                         <td style="width: 5%; white-space: nowrap; text-align: left;">{{ loop.index }}</td> <!-- Display row number -->
-                        <td style="">{{ country.name }}</td>
+                        <td style="">{{ description.name }}</td>
                         <td style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">
-                            <button class="btn-outline-custom edit-country-btn" style="float: right;" type="button" data-country-id="{{ country.id }}" data-country-name="{{ country.name }}">Edit</button>
+                            <button class="btn-outline-custom edit-description-btn" style="float: right;" type="button" data-description-id="{{ description.id }}" data-country-name="{{ description.name }}">Edit</button>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
                         <td></td>
-                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No vehicle make found.</td>
+                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No vehicle body description found.</td>
                         <td></td>
                     </tr>
                     {% endfor %}
@@ -53,11 +53,11 @@
 // Validation Rules
 // =====================================
 
-window.textAreaRegexCountry = /^[A-Za-z0-9\s,.'#/\-]{3,255}$/;
+window.textAreaRegexDescription = /^[A-Za-z0-9\s,.'#/\-]{3,255}$/;
 
-function showValidationErrorCountry($field, message) {
+function showValidationErrorDescription($field, message) {
 
-    clearValidationErrorCountry($field);
+    clearValidationErrorDescription($field);
 
     $field.addClass("is-invalid");
 
@@ -68,7 +68,7 @@ function showValidationErrorCountry($field, message) {
     `);
 }
 
-function clearValidationErrorCountry($field) {
+function clearValidationErrorDescription($field) {
 
     $field.removeClass("is-invalid");
 
@@ -81,7 +81,7 @@ function validateFieldCountry(selector, regex, message) {
 
     const value = $field.val().trim();
 
-    clearValidationErrorCountry($field);
+    clearValidationErrorDescription($field);
 
     // Empty values are allowed
     if (value === "") {
@@ -89,7 +89,7 @@ function validateFieldCountry(selector, regex, message) {
     }
 
     if (!regex.test(value)) {
-        showValidationErrorCountry(
+        showValidationErrorDescription(
             $field,
             message
         );
@@ -98,29 +98,29 @@ function validateFieldCountry(selector, regex, message) {
     return true;
 }
 
-window.validationFieldsCountry =
-window.validationFieldsCountry || [
+window.validationFieldsDescription =
+window.validationFieldsDescription || [
     {
-        selector: "#countryName",
-        message: "Country Name contains invalid characters."
+        selector: "#bodyDescriptionName",
+        message: "Vehicle Body Description contains invalid characters."
     },
     {
-        selector: "#country_name_2",
-        message: "Country Name contains invalid characters."
+        selector: "#body_description_name_2",
+        message: "Vehicle Body Description contains invalid characters."
     },
 ];
 
 // =========================
 // Real-time Validation
 // =========================
-window.validationFieldsCountry.forEach(field => {
+window.validationFieldsDescription.forEach(field => {
 
     $(document).on("input blur", field.selector, function () {
 
         const value = $(this).val().trim();
 
         // Clear previous error
-        clearValidationErrorCountry($(this));
+        clearValidationErrorDescription($(this));
 
         // Don't show an error while the field is empty.
         // The required validation will occur when the user clicks Add/Update.
@@ -130,28 +130,28 @@ window.validationFieldsCountry.forEach(field => {
 
         validateFieldCountry(
             field.selector,
-            window.textAreaRegexCountry,
+            window.textAreaRegexDescription,
             field.message
         );
     });
 });
 
-function validateCountryForm(actionType) {
+function validateVehicleBodyDescriptionForm(actionType) {
 
     let fields = [];
 
-    if (actionType === "add country") {
+    if (actionType === "add vehicle body description") {
 
         fields = [{
-            selector: "#countryName",
-            message: "Country Name contains invalid characters."
+            selector: "#bodyDescriptionName",
+            message: "Vehicle Body Description contains invalid characters."
         }];
 
-    } else if (actionType === "edit country") {
+    } else if (actionType === "edit vehicle body description") {
 
         fields = [{
-            selector: "#country_name_2",
-            message: "Country Name contains invalid characters."
+            selector: "#body_description_name_2",
+            message: "Vehicle Body Description contains invalid characters."
         }];
     }
 
@@ -162,13 +162,13 @@ function validateCountryForm(actionType) {
         const $field = $(field.selector);
         const value = $field.val().trim();
 
-        clearValidationErrorCountry($field);
+        clearValidationErrorDescription($field);
 
         if (value === "") {
 
-            showValidationErrorCountry(
+            showValidationErrorDescription(
                 $field,
-                "Country Name cannot be left blank."
+                "Vehicle Body Description cannot be left blank."
             );
 
             isValid = false;
@@ -177,7 +177,7 @@ function validateCountryForm(actionType) {
 
         if (!validateFieldCountry(
                 field.selector,
-                window.textAreaRegexCountry,
+                window.textAreaRegexDescription,
                 field.message
         )) {
             isValid = false;
@@ -202,16 +202,16 @@ function validateCountryForm(actionType) {
         $("#flashMessageModal").modal("show");
     }
 
-    function addCountry() {
+    function addVehicleBodyDescription() {
         // Open the modal
-        $("#countryAddModal").modal("show");
+        $("#vehicleBodyDescriptionAddModal").modal("show");
     }
 
-    function showCountryConfirmation(actionType) {
+    function showVehicleBodyDescriptionConfirmation(actionType) {
         if (
-            (actionType === "add country" ||
-             actionType === "edit country") &&
-            !validateCountryForm(actionType)
+            (actionType === "add vehicle body description" ||
+             actionType === "edit vehicle body description") &&
+            !validateVehicleBodyDescriptionForm(actionType)
         ) {
             return;
         }
@@ -220,23 +220,23 @@ function validateCountryForm(actionType) {
         let modalMessage = "";
 
         switch (actionType) {
-            case "add country":
-                modalTitle = "Confirm Addition of Country";
-                modalMessage = "Are you sure you want to add this country?";
+            case "add vehicle body description":
+                modalTitle = "Confirm Addition of Vehicle Body Description";
+                modalMessage = "Are you sure you want to add this vehicle body description?";
 
                 $("#confirmAction").off("click").on("click", () => {
                     $("#confirmationModal").modal("hide");
-                    registerCountry();
+                    registerVehicleBodyDescription();
                 });
                 break;
 
-            case "edit country":
-                modalTitle = "Confirm Update of Country";
-                modalMessage = "Are you sure you want to edit this country?";
+            case "edit vehicle body description":
+                modalTitle = "Confirm Update of Vehicle Body Description";
+                modalMessage = "Are you sure you want to edit this vehicle body description?";
 
                 $("#confirmAction").off("click").on("click", () => {
                     $("#confirmationModal").modal("hide");
-                    updateCountry();
+                    updateVehicleBodyDescription();
                 });
                 break;
 
@@ -259,9 +259,9 @@ function validateCountryForm(actionType) {
         }, 10);
     }
 
-    function registerCountry() {
+    function registerVehicleBodyDescription() {
 
-        const form = document.getElementById("addCountryForm");
+        const form = document.getElementById("addVehicleBodyDescriptionForm");
 
         if (!form.checkValidity()) {
             form.reportValidity();
@@ -269,30 +269,30 @@ function validateCountryForm(actionType) {
         }
 
         const formData = {
-            country_name: $("#countryName").val().trim(),
+            body_description_name: $("#bodyDescriptionName").val().trim(),
         };
 
-        // Step 1: Check if country name already exists
+        // Step 1: Check if body_description_name already exists
         $.ajax({
-            url: `/check-country-name/${encodeURIComponent(formData.country_name)}`,
+            url: `/check-body-description-name/${encodeURIComponent(formData.body_description_name)}`,
             type: "GET",
             success: function (response) {
                 if (response.exists) {
-                    showFlashMessage(`Country name, '${formData.country_name}' already exists.`, "warning");
+                    showFlashMessage(`Body Description, '${formData.body_description_name}' already exists.`, "warning");
                     return;
                 }
 
                 // Step 2: Submit country
                 const csrfToken = $('meta[name="csrf-token"]').attr('content');
                 $.ajax({
-                    url: "/admin-register-new-country",
+                    url: "/admin-register-new-vehicle-body-description",
                     type: "POST",
                     contentType: "application/json",
                     headers: {"X-CSRFToken": csrfToken},
                     data: JSON.stringify(formData),
                     success: function (response) {
-                        $("#addCountryForm")[0].reset();
-                        $("#countryAddModal").modal("hide");
+                        $("#addVehicleBodyDescriptionForm")[0].reset();
+                        $("#vehicleBodyDescriptionAddModal").modal("hide");
                         showFlashMessage(response.message, "success");
                         $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
                         $(".content").load(location.href + " .content > *", function() {
@@ -308,30 +308,30 @@ function validateCountryForm(actionType) {
                 });
             },
             error: function () {
-                showFlashMessage("Failed to validate name of vehicle make. Please contact your System Administrator.", "danger");
+                showFlashMessage("Failed to validate name of vehicle body description. Please contact your System Administrator.", "danger");
             }
         });
     }
 
-    function updateCountry() {
-        const form = document.getElementById("countryEditModal");
+    function updateVehicleBodyDescription() {
+        const form = document.getElementById("vehicleBodyDescriptionEditModal");
 
-        const country_id = $("#editCountryId").val();
+        const edit_vehicle_body_description_id = $("#editVehicleBodyDescriptionId").val();
         const formData = {
-            country_id: country_id,
-            country_name_2: $("#country_name_2").val(),
+            edit_vehicle_body_description_id: edit_vehicle_body_description_id,
+            body_description_name_2: $("#body_description_name_2").val(),
         };
 
         const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
         $.ajax({
-            url: "/admin-update-country",
+            url: "/admin-update-vehicle-body-description",
             type: "POST",
             contentType: "application/json",
             headers: {"X-CSRFToken": csrfToken},
             data: JSON.stringify(formData),
             success: function (response) {
-                $("#countryEditModal").modal("hide");
+                $("#vehicleBodyDescriptionEditModal").modal("hide");
                 showFlashMessage(response.message, "success");
                 $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
                     $(".content").load(location.href + " .content > *", function() {
@@ -347,26 +347,26 @@ function validateCountryForm(actionType) {
         });
     }
 
-    $(document).off("click", ".edit-country-btn").on("click", ".edit-country-btn", function () {
+    $(document).off("click", ".edit-description-btn").on("click", ".edit-description-btn", function () {
 
-        const country_id = $(this).data('country-id');
+        const description_id = $(this).data('description-id');
 
         $.ajax({
-            url: "/get-country-details",
+            url: "/get-vehicle-body-description-details",
             type: "GET",
-            data: {  country_id: country_id  },
+            data: {  description_id: description_id  },
             success: function (data) {
                 // Populate modal fields
-                $("#country_name_2").val(data.country_name);
+                $("#body_description_name_2").val(data.body_description);
 
                 // Store ID in form using jQuery data
-                $("#editCountryId").val(data.id);
+                $("#editVehicleBodyDescriptionId").val(data.id);
 
                 // Show the modal
-                $("#countryEditModal").modal("show");
+                $("#vehicleBodyDescriptionEditModal").modal("show");
             },
             error: function () {
-                showFlashMessage("Failed to load Vehicle Make details. Please contact your System Administrator.", "danger");
+                showFlashMessage("Failed to load vehicle body description details. Please contact your System Administrator.", "danger");
             }
         });
     });
@@ -433,7 +433,7 @@ function validateCountryForm(actionType) {
     }
 </style>
 
-    {% include 'includes/country_of_origin_add_modal.html' %}
-    {% include 'includes/country_of_origin_edit_modal.html' %}
+    {% include 'includes/vehicle_body_description_add_modal.html' %}
+    {% include 'includes/vehicle_body_description_edit_modal.html' %}
 
 {% endblock %}

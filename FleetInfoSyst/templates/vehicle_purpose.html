@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Vehicle Purpose / Function
+{% endblock %}
+
+{% block page_title %}
+    <div data-page-title>Vehicle Purpose / Function</div>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Vehicle Purpose / Function</span>
+            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addFuel()">Add Purpose</button>
+        </div>
+
+        <div class="card-body">
+            <table id="teamMemberRolesTable" class="table table-striped table-bordered table-hover paginated">
+                <thead>
+                    <tr>
+                        <th style="width: 5%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">#</th> <!-- Row number column -->
+                        <th style="">Vehicle Purpose</th>
+                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purpose in purposes %}
+                    <tr>
+                        <td style="width: 5%; white-space: nowrap; text-align: left;">{{ loop.index }}</td> <!-- Display row number -->
+                        <td style="">{{ purpose.name }}</td>
+                        <td style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">
+                            <button class="btn-outline-custom edit-purpose-btn" style="float: right;" type="button" data-purpose-id="{{ purpose.id }}" data-purpose-name="{{ purpose.name }}">Edit</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td></td>
+                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No vehicle purpose found.</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    
+// =====================================
+// Validation Rules
+// =====================================
+
+window.textAreaRegexVehiclePurpose = /^[A-Za-z0-9\s,.'#/\-]{3,255}$/;
+
+function showValidationErrorVehiclePurpose($field, message) {
+
+    clearValidationErrorVehiclePurpose($field);
+
+    $field.addClass("is-invalid");
+
+    $field.after(`
+        <div class="text-danger validation-error small">
+            ${message}
+        </div>
+    `);
+}
+
+function clearValidationErrorVehiclePurpose($field) {
+
+    $field.removeClass("is-invalid");
+
+    $field.parent().find(".validation-error").remove();
+}
+
+function validateFieldVehiclePurpose(selector, regex, message) {
+
+    const $field = $(selector);
+
+    const value = $field.val().trim();
+
+    clearValidationErrorVehiclePurpose($field);
+
+    // Empty values are allowed
+    if (value === "") {
+        return true;
+    }
+
+    if (!regex.test(value)) {
+        showValidationErrorVehiclePurpose(
+            $field,
+            message
+        );
+        return false;
+    }
+    return true;
+}
+
+window.validationFieldsVehiclePurpose =
+window.validationFieldsVehiclePurpose || [
+    {
+        selector: "#vehiclePurposeName",
+        message: "Vehicle purpose contains invalid characters."
+    },
+    {
+        selector: "#vehicle_purpose_name_2",
+        message: "Vehicle purpose contains invalid characters."
+    },
+];
+
+// =========================
+// Real-time Validation
+// =========================
+window.validationFieldsVehiclePurpose.forEach(field => {
+
+    $(document).on("input blur", field.selector, function () {
+
+        const value = $(this).val().trim();
+
+        // Clear previous error
+        clearValidationErrorVehiclePurpose($(this));
+
+        // Don't show an error while the field is empty.
+        // The required validation will occur when the user clicks Add/Update.
+        if (value === "") {
+            return;
+        }
+
+        validateFieldVehiclePurpose(
+            field.selector,
+            window.textAreaRegexVehiclePurpose,
+            field.message
+        );
+    });
+});
+
+function validateVehiclePurposeForm(actionType) {
+
+    let fields = [];
+
+    if (actionType === "add vehicle purpose") {
+
+        fields = [{
+            selector: "#vehiclePurposeName",
+            message: "Vehicle purpose contains invalid characters."
+        }];
+
+    } else if (actionType === "edit vehicle purpose") {
+
+        fields = [{
+            selector: "#vehicle_purpose_name_2",
+            message: "Vehicle purpose contains invalid characters."
+        }];
+    }
+
+    let isValid = true;
+
+    fields.forEach(field => {
+
+        const $field = $(field.selector);
+        const value = $field.val().trim();
+
+        clearValidationErrorVehiclePurpose($field);
+
+        if (value === "") {
+
+            showValidationErrorVehiclePurpose(
+                $field,
+                "Vehicle purpose cannot be left blank."
+            );
+
+            isValid = false;
+            return;
+        }
+
+        if (!validateFieldVehiclePurpose(
+                field.selector,
+                window.textAreaRegexVehiclePurpose,
+                field.message
+        )) {
+            isValid = false;
+        }
+    });
+    return isValid;
+}
+
+    function showFlashMessage(message, type) {
+        let title = "Notification"; // Default title
+
+        if (type === "danger") {
+            title = "Error";
+        } else if (type === "success") {
+            title = "Success";
+        } else if (type === "warning") {
+            title = "Warning";
+        }
+
+        $("#flashMessageTitle").text(title);
+        $("#flashMessageBody").html(message);
+        $("#flashMessageModal").modal("show");
+    }
+
+    function addFuel() {
+        // Open the modal
+        $("#vehiclePurposeAddModal").modal("show");
+    }
+
+    function showVehicleVehiclePurposeConfirmation(actionType) {
+        if (
+            (actionType === "add vehicle purpose" ||
+             actionType === "edit vehicle purpose") &&
+            !validateVehiclePurposeForm(actionType)
+        ) {
+            return;
+        }
+
+        let modalTitle = "";
+        let modalMessage = "";
+
+        switch (actionType) {
+            case "add vehicle purpose":
+                modalTitle = "Confirm Addition of Vehicle Purpose";
+                modalMessage = "Are you sure you want to add this vehicle purpose?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    registerVehiclePurpose();
+                });
+                break;
+
+            case "edit vehicle purpose":
+                modalTitle = "Confirm Update of Vehicle Purpose";
+                modalMessage = "Are you sure you want to edit this vehicle purpose?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    updateVehiclePurpose();
+                });
+                break;
+
+             default:
+                modalTitle = "Confirmation";
+                modalMessage = "Are you sure you want to proceed?";
+        }
+
+        $("#confirmationModalLabel").text(modalTitle);
+        $("#confirmationMessage").text(modalMessage);
+
+        $("#confirmationModal").modal({
+            backdrop: true,
+            keyboard: false
+        });
+
+        // Wait for Bootstrap to insert backdrop, then adjust z-index
+        setTimeout(function () {
+            $('.modal-backdrop').last().addClass('confirmation-backdrop');
+        }, 10);
+    }
+
+    function registerVehiclePurpose() {
+
+        const form = document.getElementById("addVehiclePurposeForm");
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = {
+            vehicle_purpose_name: $("#vehiclePurposeName").val().trim(),
+        };
+
+        // Step 1: Check if vehicle colour name already exists
+        $.ajax({
+            url: `/check-vehicle-purpose/${encodeURIComponent(formData.vehicle_purpose_name)}`,
+            type: "GET",
+            success: function (response) {
+                if (response.exists) {
+                    showFlashMessage(`Vehicle fuel type name, '${formData.vehicle_purpose_name}' already exists.`, "warning");
+                    return;
+                }
+
+                // Step 2: Submit vehicle fuel type
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                $.ajax({
+                    url: "/admin-register-new-vehicle-purpose",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: {"X-CSRFToken": csrfToken},
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        $("#addVehiclePurposeForm")[0].reset();
+                        $("#vehiclePurposeAddModal").modal("hide");
+                        showFlashMessage(response.message, "success");
+                        $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                        $(".content").load(location.href + " .content > *", function() {
+                            initializeRoleDataTable();
+                        });
+                });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = xhr.responseJSON?.error || "An unexpected error occurred.";
+                        let messageType = xhr.responseJSON?.type || "danger";
+                        showFlashMessage(errorMessage, messageType);
+                    }
+                });
+            },
+            error: function () {
+                showFlashMessage("Failed to validate name of vehicle purpose. Please contact your System Administrator.", "danger");
+            }
+        });
+    }
+
+    function updateVehiclePurpose() {
+        const form = document.getElementById("editVehiclePurposeForm");
+
+        const edit_vehicle_purpose_id = $("#editVehiclePurposeId").val();
+
+        const formData = {
+            edit_vehicle_purpose_id: edit_vehicle_purpose_id,
+            vehicle_purpose_name_2: $("#vehicle_purpose_name_2").val(),
+        };
+
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+        $.ajax({
+            url: "/admin-update-vehicle-purpose",
+            type: "POST",
+            contentType: "application/json",
+            headers: {"X-CSRFToken": csrfToken},
+            data: JSON.stringify(formData),
+            success: function (response) {
+                $("#vehiclePurposeEditModal").modal("hide");
+                showFlashMessage(response.message, "success");
+                $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                    $(".content").load(location.href + " .content > *", function() {
+                        initializeRoleDataTable();
+                    });
+                });
+            },
+            error: function (xhr) {
+                let errorMessage = xhr.responseJSON?.error || "An error occurred while updating the vehicle purpose.";
+                let messageType = xhr.responseJSON?.type || "danger";
+                showFlashMessage(errorMessage, messageType);
+            }
+        });
+    }
+
+    $(document).off("click", ".edit-purpose-btn").on("click", ".edit-purpose-btn", function () {
+
+        const purpose_id = $(this).data('purpose-id');
+
+        $.ajax({
+            url: "/get-vehicle-purpose-details",
+            type: "GET",
+            data: {  purpose_id: purpose_id  },
+            success: function (data) {
+                // Populate modal fields
+                $("#vehicle_purpose_name_2").val(data.vehicle_purpose_name);
+
+                // Store ID in form using jQuery data
+                $("#editVehiclePurposeId").val(data.id);
+
+                // Show the modal
+                $("#vehiclePurposeEditModal").modal("show");
+            },
+            error: function () {
+                showFlashMessage("Failed to load vehicle purpose details. Please contact your System Administrator.", "danger");
+            }
+        });
+    });
+
+    function initializeRoleDataTable() {
+        $('#teamMemberRolesTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            lengthMenu: [5, 10, 25, 50, 100],
+            pageLength: 10,
+            destroy: true, // <-- Important to allow reinitialization
+            dom: '<"row"<"col-md-6"l><"col-md-6"f>>' +
+                 '<"row"<"col-md-12"B>>' +
+                 '<"row"<"col-md-12"t>>' +
+                 '<"row"<"col-md-6"i><"col-md-6"p>>',
+            buttons: [
+                { extend: 'copy', text: 'Copy', className: 'btn btn-secondary' },
+                { extend: 'csv', text: 'Export to CSV', className: 'btn btn-secondary' },
+                { extend: 'excel', text: 'Export to Excel', className: 'btn btn-secondary' },
+                { extend: 'pdf', text: 'Export to PDF', className: 'btn btn-secondary' },
+                { extend: 'print', text: 'Print', className: 'btn btn-secondary' }
+            ],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    }
+
+   $(document).ready(function() {
+        initializeRoleDataTable()
+
+        // Handle "Close" button click
+        $("#closeViewRequest").click(function() {
+            $("#viewRequestCard").slideUp();
+        });
+    });
+
+    $(document).off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        if ($('.modal.show').length > 0) {
+            // Keep 'modal-open' if any modal is still open
+            $('body').addClass('modal-open');
+        }
+    });
+
+</script>
+
+<style>
+    #confirmationModal {
+        z-index: 1060; /* Higher than default Bootstrap modal (1050) */
+    }
+
+    /* Ensure backdrop covers roleModal when confirmationModal is active */
+    .modal-backdrop.confirmation-backdrop {
+        z-index: 1055; /* Between roleModal and confirmationModal */
+    }
+</style>
+
+    {% include 'includes/vehicle_purpose_add_modal.html' %}
+    {% include 'includes/vehicle_purpose_edit_modal.html' %}
+
+{% endblock %}

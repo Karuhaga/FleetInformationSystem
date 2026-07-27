@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Vehicle Category of Ownership
+{% endblock %}
+
+{% block page_title %}
+    <div data-page-title>Vehicle Category of Ownership</div>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Vehicle Category of Ownership</span>
+            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addVehicleCategoryOfOwnership()">Add Category</button>
+        </div>
+
+        <div class="card-body">
+            <table id="teamMemberRolesTable" class="table table-striped table-bordered table-hover paginated">
+                <thead>
+                    <tr>
+                        <th style="width: 5%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">#</th> <!-- Row number column -->
+                        <th style="">Category of Ownership</th>
+                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td style="width: 5%; white-space: nowrap; text-align: left;">{{ loop.index }}</td> <!-- Display row number -->
+                        <td style="">{{ category.name }}</td>
+                        <td style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">
+                            <button class="btn-outline-custom edit-category-of-ownership-btn" style="float: right;" type="button" data-category-of-ownership-id="{{ category.id }}" data-category-of-ownership-name="{{ category.name }}">Edit</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td></td>
+                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No vehicle category of ownership found.</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+    
+// =====================================
+// Validation Rules
+// =====================================
+
+window.textAreaRegexVehicleCategoryOfOwnership = /^[A-Za-z0-9\s,.'#/\-]{3,255}$/;
+
+function showValidationErrorVehicleCategoryOfOwnership($field, message) {
+
+    clearValidationErrorVehicleCategoryOfOwnership($field);
+
+    $field.addClass("is-invalid");
+
+    $field.after(`
+        <div class="text-danger validation-error small">
+            ${message}
+        </div>
+    `);
+}
+
+function clearValidationErrorVehicleCategoryOfOwnership($field) {
+
+    $field.removeClass("is-invalid");
+
+    $field.parent().find(".validation-error").remove();
+}
+
+function validateFieldVehicleCategoryOfOwnership(selector, regex, message) {
+
+    const $field = $(selector);
+
+    const value = $field.val().trim();
+
+    clearValidationErrorVehicleCategoryOfOwnership($field);
+
+    // Empty values are allowed
+    if (value === "") {
+        return true;
+    }
+
+    if (!regex.test(value)) {
+        showValidationErrorVehicleCategoryOfOwnership(
+            $field,
+            message
+        );
+        return false;
+    }
+    return true;
+}
+
+window.validationFieldsVehicleCategoryOfOwnership =
+window.validationFieldsVehicleCategoryOfOwnership || [
+    {
+        selector: "#vehicleCategoryOfOwnershipName",
+        message: "Category of ownership contains invalid characters."
+    },
+    {
+        selector: "#vehicle_category_of_ownership_name_2",
+        message: "Category of ownership contains invalid characters."
+    },
+];
+
+// =========================
+// Real-time Validation
+// =========================
+window.validationFieldsVehicleCategoryOfOwnership.forEach(field => {
+
+    $(document).on("input blur", field.selector, function () {
+
+        const value = $(this).val().trim();
+
+        // Clear previous error
+        clearValidationErrorVehicleCategoryOfOwnership($(this));
+
+        // Don't show an error while the field is empty.
+        // The required validation will occur when the user clicks Add/Update.
+        if (value === "") {
+            return;
+        }
+
+        validateFieldVehicleCategoryOfOwnership(
+            field.selector,
+            window.textAreaRegexVehicleCategoryOfOwnership,
+            field.message
+        );
+    });
+});
+
+function validateVehicleCategoryOfOwnershipForm(actionType) {
+
+    let fields = [];
+
+    if (actionType === "add vehicle category of ownership") {
+
+        fields = [{
+            selector: "#vehicleCategoryOfOwnershipName",
+            message: "Vehicle purpose contains invalid characters."
+        }];
+
+    } else if (actionType === "edit vehicle category of ownership") {
+
+        fields = [{
+            selector: "#vehicle_category_of_ownership_name_2",
+            message: "Vehicle purpose contains invalid characters."
+        }];
+    }
+
+    let isValid = true;
+
+    fields.forEach(field => {
+
+        const $field = $(field.selector);
+        const value = $field.val().trim();
+
+        clearValidationErrorVehicleCategoryOfOwnership($field);
+
+        if (value === "") {
+
+            showValidationErrorVehicleCategoryOfOwnership(
+                $field,
+                "Vehicle purpose cannot be left blank."
+            );
+
+            isValid = false;
+            return;
+        }
+
+        if (!validateFieldVehicleCategoryOfOwnership(
+                field.selector,
+                window.textAreaRegexVehicleCategoryOfOwnership,
+                field.message
+        )) {
+            isValid = false;
+        }
+    });
+    return isValid;
+}
+
+    function showFlashMessage(message, type) {
+        let title = "Notification"; // Default title
+
+        if (type === "danger") {
+            title = "Error";
+        } else if (type === "success") {
+            title = "Success";
+        } else if (type === "warning") {
+            title = "Warning";
+        }
+
+        $("#flashMessageTitle").text(title);
+        $("#flashMessageBody").html(message);
+        $("#flashMessageModal").modal("show");
+    }
+
+    function addVehicleCategoryOfOwnership() {
+        // Open the modal
+        $("#vehicleCategoryOfOwnershipAddModal").modal("show");
+    }
+
+    function showVehicleVehicleCategoryOfOwnershipConfirmation(actionType) {
+        if (
+            (actionType === "add vehicle category of ownership" ||
+             actionType === "edit vehicle category of ownership") &&
+            !validateVehicleCategoryOfOwnershipForm(actionType)
+        ) {
+            return;
+        }
+
+        let modalTitle = "";
+        let modalMessage = "";
+
+        switch (actionType) {
+            case "add vehicle category of ownership":
+                modalTitle = "Confirm Addition of Vehicle Category of Ownership";
+                modalMessage = "Are you sure you want to add this vehicle category of ownership?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    registerVehicleCategoryOfOwnership();
+                });
+                break;
+
+            case "edit vehicle category of ownership":
+                modalTitle = "Confirm Update of Vehicle Category of Ownership";
+                modalMessage = "Are you sure you want to edit this vehicle category of ownership?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    updateVehicleCategoryOfOwnership();
+                });
+                break;
+
+             default:
+                modalTitle = "Confirmation";
+                modalMessage = "Are you sure you want to proceed?";
+        }
+
+        $("#confirmationModalLabel").text(modalTitle);
+        $("#confirmationMessage").text(modalMessage);
+
+        $("#confirmationModal").modal({
+            backdrop: true,
+            keyboard: false
+        });
+
+        // Wait for Bootstrap to insert backdrop, then adjust z-index
+        setTimeout(function () {
+            $('.modal-backdrop').last().addClass('confirmation-backdrop');
+        }, 10);
+    }
+
+    function registerVehicleCategoryOfOwnership() {
+
+        const form = document.getElementById("addVehicleCategoryOfOwnershipForm");
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = {
+            vehicle_category_of_ownership_name: $("#vehicleCategoryOfOwnershipName").val().trim(),
+        };
+
+        // Step 1: Check if vehicle colour name already exists
+        $.ajax({
+            url: `/check-vehicle-category-of-ownership-name/${encodeURIComponent(formData.vehicle_category_of_ownership_name)}`,
+            type: "GET",
+            success: function (response) {
+                if (response.exists) {
+                    showFlashMessage(`Vehicle category of ownership name, '${formData.vehicle_category_of_ownership_name}' already exists.`, "warning");
+                    return;
+                }
+
+                // Step 2: Submit vehicle fuel type
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                $.ajax({
+                    url: "/admin-register-new-vehicle-category-of-ownership",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: {"X-CSRFToken": csrfToken},
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        $("#addVehicleCategoryOfOwnershipForm")[0].reset();
+                        $("#vehicleCategoryOfOwnershipAddModal").modal("hide");
+                        showFlashMessage(response.message, "success");
+                        $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                        $(".content").load(location.href + " .content > *", function() {
+                            initializeRoleDataTable();
+                        });
+                });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = xhr.responseJSON?.error || "An unexpected error occurred.";
+                        let messageType = xhr.responseJSON?.type || "danger";
+                        showFlashMessage(errorMessage, messageType);
+                    }
+                });
+            },
+            error: function () {
+                showFlashMessage("Failed to validate name of vehicle category of ownership. Please contact your System Administrator.", "danger");
+            }
+        });
+    }
+
+    function updateVehicleCategoryOfOwnership() {
+        const form = document.getElementById("editVehicleCategoryOfOwnershipForm");
+
+        const edit_category_of_ownership_id = $("#editCategoryOfOwnershipId").val();
+
+        const formData = {
+            edit_category_of_ownership_id: edit_category_of_ownership_id,
+            vehicle_category_of_ownership_name_2: $("#vehicle_category_of_ownership_name_2").val(),
+        };
+
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+        $.ajax({
+            url: "/admin-update-vehicle-category-of-ownership",
+            type: "POST",
+            contentType: "application/json",
+            headers: {"X-CSRFToken": csrfToken},
+            data: JSON.stringify(formData),
+            success: function (response) {
+                $("#vehicleCategoryOfOwnershipEditModal").modal("hide");
+                showFlashMessage(response.message, "success");
+                $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                    $(".content").load(location.href + " .content > *", function() {
+                        initializeRoleDataTable();
+                    });
+                });
+            },
+            error: function (xhr) {
+                let errorMessage = xhr.responseJSON?.error || "An error occurred while updating the vehicle category of ownership.";
+                let messageType = xhr.responseJSON?.type || "danger";
+                showFlashMessage(errorMessage, messageType);
+            }
+        });
+    }
+
+    $(document).off("click", ".edit-category-of-ownership-btn").on("click", ".edit-category-of-ownership-btn", function () {
+
+        const category_of_ownership_id = $(this).data('category-of-ownership-id');
+
+        $.ajax({
+            url: "/get-vehicle-category-of-ownership-details",
+            type: "GET",
+            data: {  category_of_ownership_id: category_of_ownership_id  },
+            success: function (data) {
+                // Populate modal fields
+                $("#vehicle_category_of_ownership_name_2").val(data.vehicle_category_of_ownership_name);
+
+                // Store ID in form using jQuery data
+                $("#editCategoryOfOwnershipId").val(data.id);
+
+                // Show the modal
+                $("#vehicleCategoryOfOwnershipEditModal").modal("show");
+            },
+            error: function () {
+                showFlashMessage("Failed to load vehicle category of ownership details. Please contact your System Administrator.", "danger");
+            }
+        });
+    });
+
+    function initializeRoleDataTable() {
+        $('#teamMemberRolesTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            lengthMenu: [5, 10, 25, 50, 100],
+            pageLength: 10,
+            destroy: true, // <-- Important to allow reinitialization
+            dom: '<"row"<"col-md-6"l><"col-md-6"f>>' +
+                 '<"row"<"col-md-12"B>>' +
+                 '<"row"<"col-md-12"t>>' +
+                 '<"row"<"col-md-6"i><"col-md-6"p>>',
+            buttons: [
+                { extend: 'copy', text: 'Copy', className: 'btn btn-secondary' },
+                { extend: 'csv', text: 'Export to CSV', className: 'btn btn-secondary' },
+                { extend: 'excel', text: 'Export to Excel', className: 'btn btn-secondary' },
+                { extend: 'pdf', text: 'Export to PDF', className: 'btn btn-secondary' },
+                { extend: 'print', text: 'Print', className: 'btn btn-secondary' }
+            ],
+            language: {
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    }
+
+   $(document).ready(function() {
+        initializeRoleDataTable()
+
+        // Handle "Close" button click
+        $("#closeViewRequest").click(function() {
+            $("#viewRequestCard").slideUp();
+        });
+    });
+
+    $(document).off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        if ($('.modal.show').length > 0) {
+            // Keep 'modal-open' if any modal is still open
+            $('body').addClass('modal-open');
+        }
+    });
+
+</script>
+
+<style>
+    #confirmationModal {
+        z-index: 1060; /* Higher than default Bootstrap modal (1050) */
+    }
+
+    /* Ensure backdrop covers roleModal when confirmationModal is active */
+    .modal-backdrop.confirmation-backdrop {
+        z-index: 1055; /* Between roleModal and confirmationModal */
+    }
+</style>
+
+    {% include 'includes/vehicle_category_of_ownership_add_modal.html' %}
+    {% include 'includes/vehicle_category_of_ownership_edit_modal.html' %}
+
+{% endblock %}

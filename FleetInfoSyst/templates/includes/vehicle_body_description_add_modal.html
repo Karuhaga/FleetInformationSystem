@@ -1,20 +1,20 @@
 <!-- Approval Action Modal -->
-<div class="modal fade" id="countryAddModal" tabindex="-1" aria-labelledby="approvalActionModalLabel1" aria-hidden="true">
+<div class="modal fade" id="vehicleBodyDescriptionAddModal" tabindex="-1" aria-labelledby="approvalActionModalLabel1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="approvalActionModalLabel">Add Country</h5>
+                <h5 class="modal-title" id="approvalActionModalLabel">Add Vehicle Body Description</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
 
-            <form id="addCountryForm" class="p-2 rounded shadow-sm bg-white">
+            <form id="addVehicleBodyDescriptionForm" class="p-2 rounded shadow-sm bg-white">
                 <div class="mb-3 row align-items-center">
-                    <label for="countryName" class="col-md-4 col-form-label fw-semibold">Country Name <span class="text-danger">*</span></label>
+                    <label for="bodyDescriptionName" class="col-md-4 col-form-label fw-semibold">Vehicle Body Description <span class="text-danger">*</span></label>
                     <div class="col-md-8">
-                        <input type="text" name="countryName" id="countryName" maxlength="50" class="form-control" required>
+                        <input type="text" name="bodyDescriptionName" id="bodyDescriptionName" maxlength="50" class="form-control" required>
                     </div>
                 </div>
             </form>
@@ -22,7 +22,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-outline-custom2" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary btn-outline-custom" onclick="showCountryConfirmation('add country')">Add</button>
+                <button type="button" class="btn btn-primary btn-outline-custom" onclick="showVehicleBodyDescriptionConfirmation('add vehicle body description')">Add</button>
             </div>
         </div>
     </div>
