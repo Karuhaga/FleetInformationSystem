@@ -1,0 +1,1885 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Driver Register
+{% endblock %}
+
+{% block page_title %}
+    <div data-page-title>Driver Register</div>
+{% endblock %}
+
+
+{% block content %}
+
+{# --- Centralized option templates --- #}
+
+{% set system_user_options %}
+    <option value="">Select the driver's name</option>
+    {% for system_user in system_users %}
+        <option value="{{ system_user.id }}">{{ system_user.name }}</option>
+    {% endfor %}
+{% endset %}
+
+{% set issued_by_options %}
+    <option value="">Select the country issuing the licence</option>
+    {% for country in countries %}
+        <option value="{{ country.id }}">{{ country.name }}</option>
+    {% endfor %}
+{% endset %}
+
+{% set licence_code_options %}
+    <option value="">Select the licence code</option>
+    {% for licence_code in licence_codes %}
+        <option value="{{ licence_code.id }}">{{ licence_code.name }}</option>
+    {% endfor %}
+{% endset %}
+
+{% set driver_restriction_options %}
+    <option value="">Select the driver restriction</option>
+    {% for driver_restriction in driver_restrictions %}
+        <option value="{{ driver_restriction.id }}">{{ driver_restriction.name }}</option>
+    {% endfor %}
+{% endset %}
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Driver Register</span>
+            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addDriver()">Add Driver</button>
+        </div>
+
+        <div class="card-body">
+            <table id="teamMemberRolesTable" class="table table-striped table-bordered table-hover paginated">
+                <thead>
+                    <tr>
+                        <th style="width: 5%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">#</th> <!-- Row number column -->
+                        <th style="">Driver</th>
+                        <th style="">Licence Expiry Date</th>
+                        <th style="">Licence Expires in</th>
+                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Driver</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for driver in drivers %}
+                    <tr>
+                        <td style="width: 5%; white-space: nowrap; text-align: left;">{{ loop.index }}</td> <!-- Display row number -->
+                        <td style="">{{ driver.name }}</td>
+                        <td>{{ driver.valid_to.strftime('%Y-%m-%d') if driver.valid_to else '' }}</td>
+                        <td>
+                            {% if driver.days_to_expiry is not none %}
+                                {% if driver.days_to_expiry < 0 %}
+                                    <span class="badge badge-danger" style="font-size:12px; padding:5px 5px;">
+                                        Expired ({{ driver.days_to_expiry|abs }} day(s) ago)
+                                    </span>
+                                {% elif driver.days_to_expiry <= 30 %}
+                                    <span class="badge badge-warning" style="font-size:12px; padding:5px 5px;">
+                                        {{ driver.days_to_expiry }} day(s)
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-success" style="font-size:12px; padding:5px 5px;">
+                                        {{ driver.days_to_expiry }} day(s)
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">
+                            <button class="btn-outline-custom edit-driver-btn" style="float: right;" type="button" data-driver-id="{{ driver.id }}" data-driver-name="{{ driver.name }}">Edit</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+
+// =====================================
+// Validation Rules
+// =====================================
+
+window.textRegexDriverRegister = /^[A-Za-z0-9\s\-\/]{1,50}$/;
+window.idNumberRegexDriverRegister = /^[A-Za-z0-9\-\/]{3,50}$/;
+window.licenceRegexDriverRegister = /^[A-Za-z0-9\-\/]{1,50}$/;
+
+function showValidationErrorDriverRegister($field, message) {
+
+    clearValidationErrorDriverRegister($field);
+
+    $field.addClass("is-invalid");
+
+    $field.after(`
+        <div class="text-danger validation-error small">
+            ${message}
+        </div>
+    `);
+}
+
+function clearValidationErrorDriverRegister($field) {
+    $field.removeClass("is-invalid");
+    $field.parent().find(".validation-error").remove();
+}
+
+function clearDriverRegisterValidation() {
+    $("#addDriverRegisterForm").find(".is-invalid").removeClass("is-invalid");
+    $("#addDriverRegisterForm").find(".validation-error").remove();
+}
+
+function clearDriverRegisterValidationEdit() {
+    $("#editDriverRegisterForm").find(".is-invalid").removeClass("is-invalid");
+    $("#editDriverRegisterForm").find(".validation-error").remove();
+}
+
+function validateFieldDriverRegister(selector, regex, message) {
+
+    const $field = $(selector);
+
+    const value = $field.val().trim();
+
+    clearValidationErrorDriverRegister($field);
+
+    // Empty values are allowed
+    if (value === "") {
+        return true;
+    }
+
+    if (!regex.test(value)) {
+        showValidationErrorDriverRegister(
+            $field,
+            message
+        );
+        return false;
+    }
+    return true;
+}
+
+window.validationFieldsDriverRegister = [
+    {
+        selector: "#user_id",
+        type: "select",
+        requiredMessage: "Please select a driver."
+    },
+    {
+        selector: "#dob",
+        type: "date",
+        requiredMessage: "Date of Birth cannot be left blank."
+    },
+    {
+        selector: "#id_no",
+        type: "text",
+        regex: window.idNumberRegexDriverRegister,
+        requiredMessage: "ID Number cannot be left blank.",
+        invalidMessage: "ID Number contains invalid characters."
+    },
+    {
+        selector: "#valid_from",
+        type: "date",
+        requiredMessage: "Valid From date cannot be left blank."
+    },
+    {
+        selector: "#valid_to",
+        type: "date",
+        requiredMessage: "Valid To date cannot be left blank."
+    },
+    {
+        selector: "#issued_by",
+        type: "select",
+        requiredMessage: "Please select the issuing country."
+    },
+    {
+        selector: "#licence_no",
+        type: "text",
+        regex: window.licenceRegexDriverRegister,
+        requiredMessage: "Licence Number cannot be left blank.",
+        invalidMessage: "Licence Number contains invalid characters."
+    },
+    {
+        selector: "#issue_no",
+        type: "text",
+        regex: window.textRegexDriverRegister,
+        requiredMessage: "Issue Number cannot be left blank.",
+        invalidMessage: "Issue Number contains invalid characters."
+    },
+    {
+        selector: "#first_issue",
+        type: "date",
+        requiredMessage: "First Issue date cannot be left blank."
+    }
+];
+
+window.validationFieldsDriverRegisterEdit = [
+    {
+        selector: "#edit_driver_in_register_user_id",
+        type: "select",
+        requiredMessage: "Please select a driver."
+    },
+    {
+        selector: "#edit_driver_in_register_dob",
+        type: "date",
+        requiredMessage: "Date of Birth cannot be left blank."
+    },
+    {
+        selector: "#edit_driver_in_register_id_no",
+        type: "text",
+        regex: window.idNumberRegexDriverRegister,
+        requiredMessage: "ID Number cannot be left blank.",
+        invalidMessage: "ID Number contains invalid characters."
+    },
+    {
+        selector: "#edit_driver_in_register_valid_from",
+        type: "date",
+        requiredMessage: "Valid From date cannot be left blank."
+    },
+    {
+        selector: "#edit_driver_in_register_valid_to",
+        type: "date",
+        requiredMessage: "Valid To date cannot be left blank."
+    },
+    {
+        selector: "#edit_driver_in_register_issued_by",
+        type: "select",
+        requiredMessage: "Please select the issuing country."
+    },
+    {
+        selector: "#edit_driver_in_register_licence_no",
+        type: "text",
+        regex: window.licenceRegexDriverRegister,
+        requiredMessage: "Licence Number cannot be left blank.",
+        invalidMessage: "Licence Number contains invalid characters."
+    },
+    {
+        selector: "#edit_driver_in_register_issue_no",
+        type: "text",
+        regex: window.textRegexDriverRegister,
+        requiredMessage: "Issue Number cannot be left blank.",
+        invalidMessage: "Issue Number contains invalid characters."
+    },
+    {
+        selector: "#edit_driver_in_register_first_issue",
+        type: "date",
+        requiredMessage: "First Issue date cannot be left blank."
+    }
+];
+
+// =========================
+// Real-time Validation
+// =========================
+window.validationFieldsDriverRegister.forEach(field => {
+    $(document).on(
+        "input blur change",
+        field.selector,
+        function () {
+
+            const $field = $(this);
+            const value = $field.val()?.trim() || "";
+
+            clearValidationErrorDriverRegister($field);
+
+            if (value === "") {
+                return;
+            }
+
+            if (
+                field.type === "text" &&
+                field.regex &&
+                !field.regex.test(value)
+            ) {
+                showValidationErrorDriverRegister(
+                    $field,
+                    field.invalidMessage
+                );
+            }
+        }
+    );
+});
+
+window.validationFieldsDriverRegisterEdit.forEach(field => {
+    $(document).on(
+        "input blur change",
+        field.selector,
+        function () {
+
+            const $field = $(this);
+            const value = $field.val()?.trim() || "";
+
+            clearValidationErrorDriverRegister($field);
+
+            if (value === "") {
+                return;
+            }
+
+            if (
+                field.type === "text" &&
+                field.regex &&
+                !field.regex.test(value)
+            ) {
+                showValidationErrorDriverRegister(
+                    $field,
+                    field.invalidMessage
+                );
+            }
+        }
+    );
+});
+
+function validateEditDriverRegisterForm() {
+
+    let isValid = true;
+
+    window.validationFieldsDriverRegisterEdit.forEach(field => {
+
+        const $field = $(field.selector);
+        const value = $field.val()?.trim() || "";
+
+        clearValidationErrorDriverRegister($field);
+
+        if (value === "") {
+            showValidationErrorDriverRegister(
+                $field,
+                field.requiredMessage
+            );
+            isValid = false;
+            return;
+        }
+
+        if (field.type === "text" && field.regex && !field.regex.test(value)
+        ) {
+            showValidationErrorDriverRegister(
+                $field,
+                field.invalidMessage
+            );
+            isValid = false;
+        }
+    });
+
+    // Date validations
+
+    const dob = $("#edit_driver_in_register_dob").val();
+    const validFrom = $("#edit_driver_in_register_valid_from").val();
+    const validTo = $("#edit_driver_in_register_valid_to").val();
+    const firstIssue = $("#edit_driver_in_register_first_issue").val();
+
+    if (validFrom && validTo && new Date(validTo) < new Date(validFrom)) {
+
+        showValidationErrorDriverRegister(
+            $("#edit_driver_in_register_valid_to"),
+            "Valid To date cannot be earlier than Valid From date."
+        );
+
+        isValid = false;
+    }
+
+    if (firstIssue && validFrom && new Date(firstIssue) > new Date(validFrom)) {
+
+        showValidationErrorDriverRegister(
+            $("#edit_driver_in_register_first_issue"),
+            "First Issue date cannot be later than Valid From date."
+        );
+
+        isValid = false;
+    }
+
+    if (dob) {
+
+        const today = new Date();
+        const birthDate = new Date(dob);
+
+        if (birthDate >= today) {
+
+            showValidationErrorDriverRegister(
+                $("#edit_driver_in_register_dob"),
+                "Date of Birth must be earlier than today."
+            );
+
+            isValid = false;
+        }
+    }
+
+    // Licence Code Validation
+    const licenceCodeRows = $(".licence-code-edit");
+
+    if (licenceCodeRows.length === 0) {
+        showFlashMessage(
+            "At least one Licence Code is required.",
+            "warning"
+        );
+        isValid = false;
+    } else {
+        let selectedLicenceCodes = 0;
+        licenceCodeRows.each(function () {
+            const value = $(this).val();
+            if (value && value.trim() !== "") {
+                selectedLicenceCodes++;
+            }
+        });
+
+        if (selectedLicenceCodes === 0) {
+            showFlashMessage(
+                "Please select at least one Licence Code.",
+                "warning"
+            );
+            $(licenceCodeRows[0]).addClass("is-invalid");
+            isValid = false;
+        }
+    }
+
+    // Driver Restriction Validation
+    const restrictionRows = $(".driver-restriction-edit");
+
+    if (restrictionRows.length === 0) {
+        showFlashMessage(
+            "At least one Driver Restriction is required.",
+            "warning"
+        );
+        isValid = false;
+    } else {
+        let selectedRestrictions = 0;
+
+        restrictionRows.each(function () {
+            const value = $(this).val();
+
+            if (value && value.trim() !== "") {
+                selectedRestrictions++;
+            }
+        });
+
+        if (selectedRestrictions === 0) {
+            showFlashMessage(
+                "Please select at least one Driver Restriction.",
+                "warning"
+            );
+
+            $(restrictionRows[0]).addClass("is-invalid");
+
+            isValid = false;
+        }
+    }
+
+    if (!validateLicenceCodesEdit()) {
+        isValid = false;
+    }
+
+    if (!validateDriverRestrictionsEdit()) {
+        isValid = false;
+    }
+    return isValid;
+}
+
+function validateDriverRegisterForm() {
+
+    let isValid = true;
+
+    window.validationFieldsDriverRegister.forEach(field => {
+
+        const $field = $(field.selector);
+        const value = $field.val()?.trim() || "";
+
+        clearValidationErrorDriverRegister($field);
+
+        if (value === "") {
+            showValidationErrorDriverRegister(
+                $field,
+                field.requiredMessage
+            );
+            isValid = false;
+            return;
+        }
+
+        if (field.type === "text" && field.regex && !field.regex.test(value)
+        ) {
+            showValidationErrorDriverRegister(
+                $field,
+                field.invalidMessage
+            );
+            isValid = false;
+        }
+    });
+
+    // Date validations
+
+    const dob = $("#dob").val();
+    const validFrom = $("#valid_from").val();
+    const validTo = $("#valid_to").val();
+    const firstIssue = $("#first_issue").val();
+
+    if (validFrom && validTo && new Date(validTo) < new Date(validFrom)) {
+
+        showValidationErrorDriverRegister(
+            $("#valid_to"),
+            "Valid To date cannot be earlier than Valid From date."
+        );
+
+        isValid = false;
+    }
+
+    if (firstIssue && validFrom && new Date(firstIssue) > new Date(validFrom)) {
+
+        showValidationErrorDriverRegister(
+            $("#first_issue"),
+            "First Issue date cannot be later than Valid From date."
+        );
+
+        isValid = false;
+    }
+
+    if (dob) {
+
+        const today = new Date();
+        const birthDate = new Date(dob);
+
+        if (birthDate >= today) {
+
+            showValidationErrorDriverRegister(
+                $("#dob"),
+                "Date of Birth must be earlier than today."
+            );
+
+            isValid = false;
+        }
+    }
+
+    // Licence Code Validation
+    const licenceCodeRows = $(".licence-code");
+
+    if (licenceCodeRows.length === 0) {
+        showFlashMessage(
+            "At least one Licence Code is required.",
+            "warning"
+        );
+        isValid = false;
+    } else {
+        let selectedLicenceCodes = 0;
+        licenceCodeRows.each(function () {
+            const value = $(this).val();
+            if (value && value.trim() !== "") {
+                selectedLicenceCodes++;
+            }
+        });
+
+        if (selectedLicenceCodes === 0) {
+            showFlashMessage(
+                "Please select at least one Licence Code.",
+                "warning"
+            );
+            $(licenceCodeRows[0]).addClass("is-invalid");
+            isValid = false;
+        }
+    }
+
+    // Driver Restriction Validation
+    const restrictionRows = $(".driver-restriction");
+
+    if (restrictionRows.length === 0) {
+        showFlashMessage(
+            "At least one Driver Restriction is required.",
+            "warning"
+        );
+        isValid = false;
+    } else {
+        let selectedRestrictions = 0;
+
+        restrictionRows.each(function () {
+            const value = $(this).val();
+
+            if (value && value.trim() !== "") {
+                selectedRestrictions++;
+            }
+        });
+
+        if (selectedRestrictions === 0) {
+            showFlashMessage(
+                "Please select at least one Driver Restriction.",
+                "warning"
+            );
+
+            $(restrictionRows[0]).addClass("is-invalid");
+
+            isValid = false;
+        }
+    }
+
+    if (!validateLicenceCodes()) {
+        isValid = false;
+    }
+
+    if (!validateDriverRestrictions()) {
+        isValid = false;
+    }
+    return isValid;
+}
+
+function initDatePickersDriverRegister() {
+
+    const today = new Date().toISOString().split("T")[0];
+
+    $(".driver-date-picker").each(function () {
+
+        if (this._flatpickr) {
+            return;
+        }
+
+        flatpickr(this, {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            allowInput: true,
+            defaultDate: "today"
+        });
+    });
+
+    // Date of Birth
+    if ($("#dob")[0]?._flatpickr) {
+        $("#dob")[0]._flatpickr.set("maxDate", "today");
+    }
+
+    // First Issue
+    if ($("#first_issue")[0]?._flatpickr) {
+        $("#first_issue")[0]._flatpickr.set("maxDate", "today");
+    }
+}
+
+function initializeLicenceDateRules() {
+
+    const validFromElem = $("#valid_from")[0];
+    const validToElem = $("#valid_to")[0];
+
+    if (!validFromElem || !validToElem) {
+        return;
+    }
+
+    const validFromPicker = validFromElem._flatpickr;
+    const validToPicker = validToElem._flatpickr;
+
+    validFromPicker.set("onChange", [
+        function(selectedDates) {
+
+            const validFrom = selectedDates[0];
+
+            if (
+                validFrom &&
+                validToPicker.selectedDates[0] &&
+                validToPicker.selectedDates[0] < validFrom
+            ) {
+
+                validToPicker.setDate(
+                    validFrom,
+                    false
+                );
+
+                showValidationErrorDriverRegister(
+                    $("#valid_to"),
+                    "Valid To date cannot be earlier than Valid From date. Adjusted automatically."
+                );
+
+            } else {
+
+                clearValidationErrorDriverRegister(
+                    $("#valid_to")
+                );
+            }
+        }
+    ]);
+
+    validToPicker.set("onChange", [
+        function(selectedDates) {
+
+            const validTo = selectedDates[0];
+
+            if (
+                validTo &&
+                validFromPicker.selectedDates[0] &&
+                validTo < validFromPicker.selectedDates[0]
+            ) {
+
+                this.setDate(
+                    validFromPicker.selectedDates[0],
+                    false
+                );
+
+                showValidationErrorDriverRegister(
+                    $("#valid_to"),
+                    "Valid To date cannot be earlier than Valid From date. Adjusted automatically."
+                );
+
+            } else {
+
+                clearValidationErrorDriverRegister(
+                    $("#valid_to")
+                );
+            }
+        }
+    ]);
+}
+
+    function showFlashMessage(message, type) {
+        let title = "Notification"; // Default title
+
+        if (type === "danger") {
+            title = "Error";
+        } else if (type === "success") {
+            title = "Success";
+        } else if (type === "warning") {
+            title = "Warning";
+        }
+
+        $("#flashMessageTitle").text(title);
+        $("#flashMessageBody").html(message);
+        $("#flashMessageModal").modal("show");
+    }
+
+    function addDriver() {
+
+        clearDriverRegisterValidation();
+
+        $("#driverRegisterAddModal").modal("show");
+
+        setTimeout(function () {
+            initDatePickersDriverRegister();
+            initializeLicenceDateRules();
+        }, 200);
+    }
+
+    function showDriverRegisterConfirmation(actionType) {
+
+        if (
+            (actionType === "add driver to register" &&
+             !validateDriverRegisterForm()) ||
+
+            (actionType === "edit driver in register" &&
+             !validateEditDriverRegisterForm())
+        ) {
+            return;
+        }
+
+        let modalTitle = "";
+        let modalMessage = "";
+
+        switch (actionType) {
+            case "add driver to register":
+                modalTitle = "Confirm Addition of Driver";
+                modalMessage = "Are you sure you want to add this driver?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    registerDriver();
+                });
+                break;
+
+            case "edit driver in register":
+                modalTitle = "Confirm Update of Driver";
+                modalMessage = "Are you sure you want to update this driver's details?";
+
+                $("#confirmAction").off("click").on("click", () => {
+                    $("#confirmationModal").modal("hide");
+                    updateDriver();
+                });
+                break;
+
+             default:
+                modalTitle = "Confirmation";
+                modalMessage = "Are you sure you want to proceed?";
+        }
+
+        $("#confirmationModalLabel").text(modalTitle);
+        $("#confirmationMessage").text(modalMessage);
+
+        $("#confirmationModal").modal({
+            backdrop: true,
+            keyboard: false
+        });
+
+        // Wait for Bootstrap to insert backdrop, then adjust z-index
+        setTimeout(function () {
+            $('.modal-backdrop').last().addClass('confirmation-backdrop');
+        }, 10);
+    }
+
+    function registerDriver() {
+
+        const form = document.getElementById("addDriverRegisterForm");
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const form_data = {
+            user_id: $("#user_id").val().trim(),
+            has_driving_permit: $('input[name="has_driving_permit"]:checked').val(),
+            is_driver_certified_by_uetcl: $('input[name="is_driver_certified_by_uetcl"]:checked').val(),
+            dob: $("#dob").val().trim(),
+            gender_of_driver: $('input[name="gender_of_driver"]:checked').val(),
+            id_no: $("#id_no").val().trim(),
+            valid_from_date: $("#valid_from").val().trim(),
+            valid_to_date: $("#valid_to").val().trim(),
+            issue_country_id: $("#issued_by").val().trim(),
+            licence_no: $("#licence_no").val().trim(),
+            issue_no: $("#issue_no").val().trim(),
+            first_issue_date: $("#first_issue").val().trim()
+        };
+
+        const licence_codes = [];
+        $("#licenceCodeTableBody tr").each(function() {
+            const licence_code_id = $(this).find("select[name='licence_code[]']").val();
+            if (licence_code_id) {
+                licence_codes.push({
+                    licence_code_id
+                });
+            }
+        });
+
+        const driver_restrictions = [];
+        $("#driverRestrictionTableBody tr").each(function() {
+            const driver_restriction_id = $(this).find("select[name='driver_restrictions[]']").val();
+            if (driver_restriction_id) {
+                driver_restrictions.push({
+                    driver_restriction_id
+                });
+            }
+        });
+
+        const formData = new FormData();
+
+        const payload = {
+            form_data,
+            licence_codes,
+            driver_restrictions
+        };
+
+        formData.append("data", JSON.stringify(payload));
+
+        // Step 1: Check if driver already exists in register
+        $.ajax({
+            url: `/check-driver-exists-in-register/${encodeURIComponent(form_data.user_id)}`,
+            type: "GET",
+            success: function (response) {
+                if (response.exists) {
+                    showFlashMessage(`Driver already exists in register.`, "warning");
+                    return;
+                }
+
+                // Step 2: Add driver to register
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                $.ajax({
+                    url: "/admin-register-new-driver",
+                    type: "POST",
+                    data: formData,
+                    headers: {"X-CSRFToken": csrfToken},
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        $("#addDriverRegisterForm")[0].reset();
+                        $("#driverRegisterAddModal").modal("hide");
+                        showFlashMessage(response.message, "success");
+                        $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
+                        $(".content").load(location.href + " .content > *", function() {
+                            initializeRoleDataTable();
+                        });
+                });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = xhr.responseJSON?.error || "An unexpected error occurred.";
+                        let messageType = xhr.responseJSON?.type || "danger";
+                        showFlashMessage(errorMessage, messageType);
+                    }
+                });
+            },
+            error: function () {
+                showFlashMessage("Failed to validate name of driver. Please contact your System Administrator.", "danger");
+            }
+        });
+    }
+
+    function updateDriver() {
+        const form = document.getElementById("editDriverRegisterForm");
+
+        const driver_id_for_edit = $("#editDriverRegisterId").val();
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const form_data = {
+            user_id: $("#edit_driver_in_register_user_id").val().trim(),
+            has_driving_permit: $('input[name="edit_driver_in_register_has_driving_permit"]:checked').val(),
+            is_driver_certified_by_uetcl: $('input[name="edit_driver_in_register_is_driver_certified_by_uetcl"]:checked').val(),
+            dob: $("#edit_driver_in_register_dob").val().trim(),
+            gender_of_driver: $('input[name="edit_driver_in_register_gender_of_driver"]:checked').val(),
+            id_no: $("#edit_driver_in_register_id_no").val().trim(),
+            valid_from_date: $("#edit_driver_in_register_valid_from").val().trim(),
+            valid_to_date: $("#edit_driver_in_register_valid_to").val().trim(),
+            issue_country_id: $("#edit_driver_in_register_issued_by").val().trim(),
+            licence_no: $("#edit_driver_in_register_licence_no").val().trim(),
+            issue_no: $("#edit_driver_in_register_issue_no").val().trim(),
+            first_issue_date: $("#edit_driver_in_register_first_issue").val().trim()
+        };
+
+        const licence_codes = [];
+        $("#licenceCodeTableBodyEditModal tr").each(function() {
+            const licence_code_id = $(this).find("select[name='licence_code_edit[]']").val();
+            if (licence_code_id) {
+                licence_codes.push({
+                    licence_code_id
+                });
+            }
+        });
+
+        const driver_restrictions = [];
+        $("#driverRestrictionTableBodyEditModal tr").each(function() {
+            const driver_restriction_id = $(this).find("select[name='driver_restrictions_edit[]']").val();
+            if (driver_restriction_id) {
+                driver_restrictions.push({
+                    driver_restriction_id
+                });
+            }
+        });
+
+        const formData = new FormData();
+
+        const payload = {
+            form_data,
+            licence_codes,
+            driver_restrictions
+        };
+
+        formData.append("data", JSON.stringify(payload));
+
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+        $.ajax({
+            url: "/admin-update-driver",
+            type: "POST",
+            data: formData,
+            headers: { "X-CSRFToken": csrfToken },
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $("#editDriverRegisterForm")[0].reset();
+                $("#driverRegisterEditModal").modal("hide");
+
+                showFlashMessage(response.message, "success");
+
+                $("#flashMessageModal")
+                    .off("hidden.bs.modal")
+                    .on("hidden.bs.modal", function () {
+                        $(".content").load(location.href + " .content > *", function () {
+                            initializeRoleDataTable();
+                        });
+                    });
+            },
+            error: function (xhr) {
+                const errorMessage =
+                    xhr.responseJSON?.error || "An unexpected error occurred.";
+                const messageType =
+                    xhr.responseJSON?.type || "danger";
+
+                showFlashMessage(errorMessage, messageType);
+            }
+        });
+    }
+
+    $(document).off("click", ".edit-driver-btn").on("click", ".edit-driver-btn", function () {
+
+        const driver_id = $(this).data('driver-id');
+
+        $.ajax({
+            url: "/get-driver-details",
+            type: "GET",
+            data: {  driver_id: driver_id  },
+            success: function (data) {
+
+                // Store ID in form using jQuery data
+                $("#editDriverRegisterId").val(data.id);
+                
+                // Populate modal fields
+                $("#edit_driver_in_register_user_id").val(data.user_id);
+                $(
+                    'input[name="edit_driver_in_register_has_driving_permit"][value="' +
+                    data.has_driving_permit +
+                    '"]'
+                ).prop("checked", true);
+                $(
+                    'input[name="edit_driver_in_register_is_driver_certified_by_uetcl"][value="' +
+                    data.is_driver_certified +
+                    '"]'
+                ).prop("checked", true);
+                $("#edit_driver_in_register_dob").val(data.dob ? new Date(data.dob).toISOString().split("T")[0] : "");
+                $(
+                    'input[name="edit_driver_in_register_gender_of_driver"][value="' +
+                    data.gender +
+                    '"]'
+                ).prop("checked", true);
+                $("#edit_driver_in_register_id_no").val(data.id_no);
+                $("#edit_driver_in_register_valid_from").val(data.valid_from ? new Date(data.valid_from).toISOString().split("T")[0] : "");
+                $("#edit_driver_in_register_valid_to").val(data.valid_to ? new Date(data.valid_to).toISOString().split("T")[0] : "");
+                $("#edit_driver_in_register_issued_by").val(data.issued_country_id);
+                $("#edit_driver_in_register_licence_no").val(data.licence_no);
+                $("#edit_driver_in_register_issue_no").val(data.issue_no);
+                $("#edit_driver_in_register_first_issue").val(data.first_issue ? new Date(data.first_issue).toISOString().split("T")[0] : "");
+
+                // Show the modal
+                $("#driverRegisterEditModal").modal("show");
+            },
+            error: function () {
+                showFlashMessage("Failed to load driver details. Please contact your System Administrator.", "danger");
+            }
+        });
+
+        // Load licence codes
+        $.ajax({
+            url: "/get-saved-licence-codes-of-driver",
+            type: "GET",
+            data: {  driver_id: driver_id  },
+            success: function(response) {
+                if (response.licence_codes && response.licence_codes.length > 0) {
+                    const $tbody = $("#licenceCodeTableBodyEditModal");
+                    $tbody.empty(); // clear old rows
+
+                    response.licence_codes.forEach((member, index) => {
+
+                        const newRow = $(`
+                            <tr>
+                                <td class="text-end">
+                                    ${index + 1}
+                                </td>
+
+                                <td>
+                                    <select
+                                        class="form-control licence-code-edit"
+                                        name="licence_code_edit[]"
+                                        required>
+                                        {{ licence_code_options | safe }}
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-danger remove-licence-code-edit">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+
+                        // Pre-select saved licence code
+                        newRow
+                            .find(".licence-code-edit")
+                            .val(member.licence_code_id);
+
+                        $tbody.append(newRow);
+                    });
+
+                    refreshLicenceCodeOptionsEdit();
+                } else {
+                    showFlashMessage("No licence code found for this driver.", "warning");
+                }
+            },
+            error: function(xhr) {
+                showFlashMessage(xhr.responseJSON?.error || "Failed to load licence codes.", "danger");
+            }
+        });
+
+        // Load driver restrictions
+        $.ajax({
+            url: "/get-saved-driver-restrictions",
+            type: "GET",
+            data: {  driver_id: driver_id  },
+            success: function(response) {
+                if (response.driver_restrictions && response.driver_restrictions.length > 0) {
+                    const $tbody = $("#driverRestrictionTableBodyEditModal");
+                    $tbody.empty(); // clear old rows
+
+                    response.driver_restrictions.forEach((member, index) => {
+                        const newRow = $(`
+                            <tr>
+                                <td class="text-end">
+                                    ${index + 1}
+                                </td>
+
+                                <td>
+                                    <select class="form-control driver-restriction-edit"
+                                            name="driver_restrictions_edit[]"
+                                            required>
+                                        {{ driver_restriction_options | safe }}
+                                    </select>
+                                </td>
+
+                                <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-sm btn-danger remove-driver-restriction-edit">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+
+                        // Pre-select saved values
+                        newRow.find("select[name='driver_restrictions_edit[]']").val(member.driver_restriction_id);
+
+                        $tbody.append(newRow);
+                    });
+                } else {
+                    showFlashMessage("No restriction found for this driver.", "warning");
+                }
+            },
+            error: function(xhr) {
+                showFlashMessage(xhr.responseJSON?.error || "Failed to load driver restrictions.", "danger");
+            }
+        });
+    });
+
+    function initializeRoleDataTable() {
+        $('#teamMemberRolesTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            lengthMenu: [5, 10, 25, 50, 100],
+            pageLength: 10,
+            destroy: true, // <-- Important to allow reinitialization
+            dom: '<"row"<"col-md-6"l><"col-md-6"f>>' +
+                 '<"row"<"col-md-12"B>>' +
+                 '<"row"<"col-md-12"t>>' +
+                 '<"row"<"col-md-6"i><"col-md-6"p>>',
+            buttons: [
+                { extend: 'copy', text: 'Copy', className: 'btn btn-secondary' },
+                { extend: 'csv', text: 'Export to CSV', className: 'btn btn-secondary' },
+                { extend: 'excel', text: 'Export to Excel', className: 'btn btn-secondary' },
+                { extend: 'pdf', text: 'Export to PDF', className: 'btn btn-secondary' },
+                { extend: 'print', text: 'Print', className: 'btn btn-secondary' }
+            ],
+            language: {
+                emptyTable: "No records found",
+                zeroRecords: "No matching records found",
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        initializeRoleDataTable();
+        initDatePickersDriverRegister();
+        initializeLicenceDateRules();
+    });
+
+    $(document).off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        if ($('.modal.show').length > 0) {
+            // Keep 'modal-open' if any modal is still open
+            $('body').addClass('modal-open');
+        }
+    });
+
+    // Add Licence Code Row
+    $(document).off("click", "#btnAddLicenceCode").on("click", "#btnAddLicenceCode", function () {
+        addLicenceCodeRow();
+    });
+
+    // Add Licence Code Row on Driver Register Edit Modal
+    $(document).off("click", "#btnAddLicenceCodeEdit").on("click", "#btnAddLicenceCodeEdit", function () {
+        addLicenceCodeRowEdit();
+    });
+
+    // Add Driver Restriction Row
+    $(document).off("click", "#btnAddDriverRestriction").on("click", "#btnAddDriverRestriction", function () {
+        addDriverRestrictionRow();
+    });
+
+    // Add Driver Restriction Row Edit Modal
+    $(document).off("click", "#btnAddDriverRestrictionEdit").on("click", "#btnAddDriverRestrictionEdit", function () {
+        addDriverRestrictionRowEdit();
+    });
+
+    // Delete Licence Code Row
+    $(document).off("click", ".remove-licence-code").on("click", ".remove-licence-code", function () {
+        if ($("#licenceCodeTableBody tr").length <= 1) {
+            showFlashMessage(
+                "At least one licence code is required.",
+                "warning"
+            );
+            return;
+        }
+
+        $(this).closest("tr").remove();
+
+        $("#licenceCodeTableBody tr").each(function (index) {
+            $(this).find("td:first").text(index + 1);
+        });
+
+        refreshLicenceCodeOptions();
+    });
+
+// Delete Licence Code Row on Edit Modal
+$(document).off("click", ".remove-licence-code-edit").on("click", ".remove-licence-code-edit", function () {
+
+        const $tbody = $("#licenceCodeTableBodyEditModal");
+
+        if ($tbody.find("tr").length <= 1) {
+            showFlashMessage(
+                "At least one licence code is required.",
+                "warning"
+            );
+            return;
+        }
+
+        $(this).closest("tr").remove();
+
+        // Renumber rows
+        $tbody.find("tr").each(function (index) {
+            $(this).find("td:first").text(index + 1);
+        });
+
+        // Refresh the Edit modal only
+        refreshLicenceCodeOptionsEdit();
+    });
+
+// Delete Driver Restriction Row
+$(document).off("click", ".remove-driver-restriction").on("click", ".remove-driver-restriction", function () {
+    if ($("#driverRestrictionTableBody tr").length <= 1) {
+        showFlashMessage(
+            "At least one driver restriction is required.",
+            "warning"
+        );
+        return;
+    }
+
+    $(this).closest("tr").remove();
+
+    $("#driverRestrictionTableBody tr").each(function (index) {
+        $(this).find("td:first").text(index + 1);
+    });
+
+    refreshDriverRestrictionOptions();
+});
+
+// Delete Driver Restriction Row
+$(document).off("click", ".remove-driver-restriction-edit").on("click", ".remove-driver-restriction-edit", function () {
+    if ($("#driverRestrictionTableBodyEditModal tr").length <= 1) {
+        showFlashMessage(
+            "At least one driver restriction is required.",
+            "warning"
+        );
+        return;
+    }
+
+    $(this).closest("tr").remove();
+
+    $("#driverRestrictionTableBodyEditModal tr").each(function (index) {
+        $(this).find("td:first").text(index + 1);
+    });
+
+    refreshDriverRestrictionOptionsEdit();
+});
+
+// Reset all fields when Add Driver modal closes
+$('#driverRegisterAddModal').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+
+        // Reset form fields
+        $("#addDriverRegisterForm")[0].reset();
+
+        // Clear validation errors
+        clearDriverRegisterValidation();
+
+        // Reset Flatpickr fields
+        $(this).find(".driver-date-picker").each(function () {
+            if (this._flatpickr) {
+                this._flatpickr.clear();
+            }
+        });
+
+        // -----------------------------------------
+        // Reset Licence Codes
+        // -----------------------------------------
+
+        const $licenceTableBody = $("#licenceCodeTableBody");
+
+        // Keep only the first row
+        $licenceTableBody.find("tr:not(:first)").remove();
+
+        // Reset first licence-code select
+        $licenceTableBody
+            .find("tr:first .licence-code")
+            .val("");
+
+        // Reset row number
+        $licenceTableBody
+            .find("tr:first td:first")
+            .text("1");
+
+        // Re-enable all licence-code options
+        refreshLicenceCodeOptions();
+
+
+        // -----------------------------------------
+        // Reset Driver Restrictions
+        // -----------------------------------------
+
+        const $restrictionTableBody =
+            $("#driverRestrictionTableBody");
+
+        // Keep only the first row
+        $restrictionTableBody.find("tr:not(:first)").remove();
+
+        // Reset first restriction select
+        $restrictionTableBody
+            .find("tr:first .driver-restriction")
+            .val("");
+
+        // Reset row number
+        $restrictionTableBody
+            .find("tr:first td:first")
+            .text("1");
+
+        // Re-enable all restriction options
+        refreshDriverRestrictionOptions();
+    });
+
+// Reset all fields when Add Driver modal closes
+$('#driverRegisterEditModal').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+
+        // Reset form fields
+        $("#editDriverRegisterForm")[0].reset();
+
+        // Clear validation errors
+        clearDriverRegisterValidationEdit();
+
+        // Reset Flatpickr fields
+        $(this).find(".driver-date-picker").each(function () {
+            if (this._flatpickr) {
+                this._flatpickr.clear();
+            }
+        });
+
+        // -----------------------------------------
+        // Reset Licence Codes
+        // -----------------------------------------
+
+        const $licenceTableBody = $("#licenceCodeTableBodyEditModal");
+
+        // Keep only the first row
+        $licenceTableBody.find("tr:not(:first)").remove();
+
+        // Reset first licence-code select
+        $licenceTableBody.find("tr:first .licence-code-edit").val("");
+
+        // Reset row number
+        $licenceTableBody.find("tr:first td:first").text("1");
+
+        // Re-enable all licence-code-edit options
+        refreshLicenceCodeOptionsEdit();
+
+        // -----------------------------------------
+        // Reset Driver Restrictions
+        // -----------------------------------------
+
+        const $restrictionTableBody = $("#driverRestrictionTableBodyEditModal");
+
+        // Keep only the first row
+        $restrictionTableBody.find("tr:not(:first)").remove();
+
+        // Reset first restriction select
+        $restrictionTableBody.find("tr:first .driver-restriction-edit").val("");
+
+        // Reset row number
+        $restrictionTableBody.find("tr:first td:first").text("1");
+
+        // Re-enable all restriction options
+        refreshDriverRestrictionOptionsEdit();
+    });
+
+function addLicenceCodeRow(selectedValue = "") {
+
+    const $tbody = $("#licenceCodeTableBody");
+    const rowNo = $tbody.find("tr").length + 1;
+
+    // Get the licence-code options directly from
+    // the existing select in the Add Driver modal.
+    const licenceCodeOptions = $tbody.find(".licence-code:first").html() || "";
+
+    const row = `
+        <tr>
+            <td class="licence-row-no">
+                ${rowNo}
+            </td>
+
+            <td>
+                <select
+                    class="form-control licence-code"
+                    name="licence_code[]"
+                    required>
+                    ${licenceCodeOptions}
+                </select>
+            </td>
+
+            <td class="text-center">
+                <button
+                    type="button"
+                    class="btn btn-danger btn-sm remove-licence-code">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+
+    $tbody.append(row);
+
+    if (selectedValue) {
+        $tbody
+            .find("tr:last .licence-code")
+            .val(selectedValue);
+    }
+
+    refreshLicenceCodeOptions();
+}
+
+function addLicenceCodeRowEdit(selectedValue = "") {
+
+    const $tbody = $("#licenceCodeTableBodyEditModal");
+    const rowNo = $tbody.find("tr").length + 1;
+
+    // Get options directly from the existing
+    // licence-code select in the Edit modal.
+    const licenceCodeOptions =
+        $tbody.find(".licence-code-edit:first").html() || "";
+
+    const row = `
+        <tr>
+            <td class="licence-row-no">
+                ${rowNo}
+            </td>
+
+            <td>
+                <select
+                    class="form-control licence-code-edit"
+                    name="licence_code_edit[]"
+                    required>
+                    ${licenceCodeOptions}
+                </select>
+            </td>
+
+            <td class="text-center">
+                <button
+                    type="button"
+                    class="btn btn-danger btn-sm remove-licence-code-edit">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+
+    $tbody.append(row);
+
+    if (selectedValue) {
+        $tbody
+            .find("tr:last .licence-code-edit")
+            .val(selectedValue);
+    }
+
+    refreshLicenceCodeOptionsEdit();
+}
+
+function addDriverRestrictionRow(selectedValue = "") {
+
+    const $tbody = $("#driverRestrictionTableBody");
+    const rowNo = $tbody.find("tr").length + 1;
+
+    // Get the restriction options directly from
+    // the existing select in the Add Driver modal.
+    const driverRestrictionOptions =
+        $tbody.find(".driver-restriction:first").html() || "";
+
+    const row = `
+        <tr>
+            <td class="restriction-row-no">
+                ${rowNo}
+            </td>
+
+            <td>
+                <select
+                    class="form-control driver-restriction"
+                    name="driver_restrictions[]"
+                    required>
+                    ${driverRestrictionOptions}
+                </select>
+            </td>
+
+            <td class="text-center">
+                <button
+                    type="button"
+                    class="btn btn-danger btn-sm remove-driver-restriction">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+
+    $tbody.append(row);
+
+    if (selectedValue) {
+        $tbody
+            .find("tr:last .driver-restriction")
+            .val(selectedValue);
+    }
+
+    refreshDriverRestrictionOptions();
+}
+
+function addDriverRestrictionRowEdit(selectedValue = "") {
+
+    const $tbody = $("#driverRestrictionTableBodyEditModal");
+    const rowNo = $tbody.find("tr").length + 1;
+
+    // Get the restriction options directly from
+    // the existing select in the Add Driver modal.
+    const driverRestrictionOptions = $tbody.find(".driver-restriction-edit:first").html() || "";
+
+    const row = `
+                  <tr>
+                        <td class="restriction-row-no">
+                            ${rowNo}
+                        </td>
+
+                        <td>
+                            <select class="form-control driver-restriction-edit"
+                                    name="driver_restrictions_edit[]"
+                                    required>
+                                {{ driver_restriction_options | safe }}
+                            </select>
+                        </td>
+
+                        <td class="text-center">
+                            <button type="button"
+                                    class="btn btn-sm btn-danger remove-driver-restriction-edit">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+    `;
+
+    $tbody.append(row);
+
+    if (selectedValue) {
+        $tbody.find("tr:last .driver-restriction-edit").val(selectedValue);
+    }
+
+    refreshDriverRestrictionOptionsEdit();
+}
+
+function validateLicenceCodes() {
+
+    const values = [];
+
+    let valid = true;
+
+    $(".licence-code").each(function () {
+
+        const value = $(this).val();
+
+        if (!value) {
+            return;
+        }
+
+        if (values.includes(value)) {
+
+            showFlashMessage(
+                "Duplicate Licence Codes are not allowed.",
+                "warning"
+            );
+
+            valid = false;
+
+            return false;
+        }
+
+        values.push(value);
+
+    });
+
+    return valid;
+}
+
+function validateLicenceCodesEdit() {
+
+    const values = [];
+    let valid = true;
+
+    $(".licence-code-edit").each(function () {
+        const value = $(this).val();
+
+        if (!value) {
+            return;
+        }
+
+        if (values.includes(value)) {
+            showFlashMessage(
+                "Duplicate Licence Codes are not allowed.",
+                "warning"
+            );
+            valid = false;
+            return false;
+        }
+
+        values.push(value);
+    });
+
+    return valid;
+}
+
+function validateDriverRestrictions() {
+
+    const values = [];
+
+    let valid = true;
+
+    $(".driver-restriction").each(function () {
+
+        const value = $(this).val();
+
+        if (!value) {
+            return;
+        }
+
+        if (values.includes(value)) {
+
+            showFlashMessage(
+                "Duplicate Driver Restrictions are not allowed.",
+                "warning"
+            );
+
+            valid = false;
+
+            return false;
+        }
+
+        values.push(value);
+
+    });
+    return valid;
+}
+
+function validateDriverRestrictionsEdit() {
+
+    const values = [];
+
+    let valid = true;
+
+    $(".driver-restriction-edit").each(function () {
+
+        const value = $(this).val();
+
+        if (!value) {
+            return;
+        }
+
+        if (values.includes(value)) {
+
+            showFlashMessage(
+                "Duplicate Driver Restrictions are not allowed.",
+                "warning"
+            );
+
+            valid = false;
+
+            return false;
+        }
+
+        values.push(value);
+
+    });
+    return valid;
+}
+
+function refreshLicenceCodeOptions() {
+
+    const selectedValues = [];
+
+    $(".licence-code").each(function () {
+
+        const value = $(this).val();
+
+        if (value) {
+            selectedValues.push(value);
+        }
+    });
+
+    $(".licence-code").each(function () {
+
+        const currentValue = $(this).val();
+
+        $(this).find("option").each(function () {
+
+            const optionValue = $(this).val();
+
+            if (!optionValue) {
+                return;
+            }
+
+            // Disable if selected elsewhere
+            if (
+                selectedValues.includes(optionValue) &&
+                optionValue !== currentValue
+            ) {
+                $(this).prop("disabled", true);
+            } else {
+                $(this).prop("disabled", false);
+            }
+        });
+    });
+}
+
+function refreshLicenceCodeOptionsEdit() {
+
+    const selectedValues = [];
+
+    $(".licence-code-edit").each(function () {
+
+        const value = $(this).val();
+
+        if (value) {
+            selectedValues.push(value);
+        }
+    });
+
+    $(".licence-code-edit").each(function () {
+
+        const currentValue = $(this).val();
+
+        $(this).find("option").each(function () {
+
+            const optionValue = $(this).val();
+
+            if (!optionValue) {
+                return;
+            }
+
+            // Disable if selected elsewhere
+            if (
+                selectedValues.includes(optionValue) &&
+                optionValue !== currentValue
+            ) {
+                $(this).prop("disabled", true);
+            } else {
+                $(this).prop("disabled", false);
+            }
+        });
+    });
+}
+
+function refreshDriverRestrictionOptions() {
+
+    const selectedValues = [];
+
+    $(".driver-restriction").each(function () {
+
+        const value = $(this).val();
+
+        if (value) {
+            selectedValues.push(value);
+        }
+    });
+
+    $(".driver-restriction").each(function () {
+
+        const currentValue = $(this).val();
+
+        $(this).find("option").each(function () {
+
+            const optionValue = $(this).val();
+
+            if (!optionValue) {
+                return;
+            }
+
+            if (
+                selectedValues.includes(optionValue) &&
+                optionValue !== currentValue
+            ) {
+                $(this).prop("disabled", true);
+            } else {
+                $(this).prop("disabled", false);
+            }
+        });
+    });
+}
+
+function refreshDriverRestrictionOptionsEdit() {
+
+    const selectedValues = [];
+
+    $(".driver-restriction-edit").each(function () {
+
+        const value = $(this).val();
+
+        if (value) {
+            selectedValues.push(value);
+        }
+    });
+
+    $(".driver-restriction-edit").each(function () {
+
+        const currentValue = $(this).val();
+
+        $(this).find("option").each(function () {
+
+            const optionValue = $(this).val();
+
+            if (!optionValue) {
+                return;
+            }
+
+            if (
+                selectedValues.includes(optionValue) &&
+                optionValue !== currentValue
+            ) {
+                $(this).prop("disabled", true);
+            } else {
+                $(this).prop("disabled", false);
+            }
+        });
+    });
+}
+
+$(document).off("change", ".licence-code").on("change", ".licence-code", function () {
+    refreshLicenceCodeOptions();
+});
+
+$(document).off("change", ".licence-code-edit").on("change", ".licence-code-edit", function () {
+    refreshLicenceCodeOptionsEdit();
+});
+
+$(document).off("change", ".driver-restriction").on("change", ".driver-restriction", function () {
+    refreshDriverRestrictionOptions();
+});
+
+$(document).off("change", ".driver-restriction-edit").on("change", ".driver-restriction-edit", function () {
+    refreshDriverRestrictionOptionsEdit();
+});
+
+</script>
+
+<style>
+    #confirmationModal {
+        z-index: 1060; /* Higher than default Bootstrap modal (1050) */
+    }
+
+    /* Ensure backdrop covers roleModal when confirmationModal is active */
+    .modal-backdrop.confirmation-backdrop {
+        z-index: 1055; /* Between roleModal and confirmationModal */
+    }
+
+    option:disabled {
+        color: #999;
+        background-color: #f5f5f5;
+    }
+</style>
+
+    {% include 'includes/driver_register_add_modal.html' %}
+    {% include 'includes/driver_register_edit_modal.html' %}
+
+{% endblock %}

@@ -140,6 +140,13 @@
     {% endfor %}
 {% endset %}
 
+{% set driver_with_licence_options %}
+    <option value="">Select the vehicle user with a valid licence</option>
+    {% for driver_with_valid_licence in drivers_with_valid_licences %}
+        <option value="{{ driver_with_valid_licence.user_id }}">{{ driver_with_valid_licence.name }}</option>
+    {% endfor %}
+{% endset %}
+
 <div class="card">
     <form id="vehicleRegisterForm" method="post">
 
@@ -489,6 +496,13 @@
                             <label for="vehicle_responsible_personnel_id" class="form-label">Responsible Personnel*:</label>
                             <select class="form-control" id="vehicle_responsible_personnel_id" name="vehicle_responsible_personnel_id" required>
                                 {{ vehicle_system_user_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_user_id" class="form-label">Vehicle User*:</label>
+                            <select class="form-control" id="vehicle_user_id" name="vehicle_user_id" required>
+                                {{ driver_with_licence_options | safe }}
                             </select>
                         </div>
                     </div>

@@ -1,0 +1,243 @@
+<!-- Approval Action Modal -->
+<div class="modal fade" id="driverRegisterEditModal" tabindex="-1" aria-labelledby="approvalActionModalLabel1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approvalActionModalLabel">Edit Driver Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <form id="editDriverRegisterForm" class="p-2 rounded shadow-sm bg-white">
+                    <input type="hidden" id="editDriverRegisterId">
+                    
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_user_id" class="col-md-4 col-form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                        <div class="col-md-8">
+                            <select class="form-control" id="edit_driver_in_register_user_id" name="edit_driver_in_register_user_id" required>
+                                {{ system_user_options | safe }}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 row">
+                        <label class="col-md-4 col-form-label fw-semibold">Has Driving Permit? <span class="text-danger">*</span></label>
+                        <div class="col-md-8 d-flex align-items-center" style="gap: 4rem;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="edit_driver_in_register_has_driving_permit" id="edit_driver_in_register_has_driving_permit_yes" value="1" checked required>
+                                <label class="form-check-label" for="edit_driver_in_register_has_driving_permit_yes">Yes</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="edit_driver_in_register_has_driving_permit" id="edit_driver_in_register_has_driving_permit_no" value="0">
+                                <label class="form-check-label" for="edit_driver_in_register_has_driving_permit_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 row">
+                        <label class="col-md-4 col-form-label fw-semibold">Is Driver Certified by UETCL? <span class="text-danger">*</span></label>
+                        <div class="col-md-8 d-flex align-items-center" style="gap: 4rem;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="edit_driver_in_register_is_driver_certified_by_uetcl" id="edit_driver_in_register_is_driver_certified_by_uetcl_yes" value="1" checked required>
+                                <label class="form-check-label" for="edit_driver_in_register_is_driver_certified_by_uetcl_yes">Yes</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="edit_driver_in_register_is_driver_certified_by_uetcl" id="edit_driver_in_register_is_driver_certified_by_uetcl_no" value="0">
+                                <label class="form-check-label" for="edit_driver_in_register_is_driver_certified_by_uetcl_no">No</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_dob" class="col-md-4 col-form-label fw-semibold">
+                            Date of Birth <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-md-8">
+                            <input type="text" id="edit_driver_in_register_dob" name="edit_driver_in_register_dob" class="form-control driver-date-picker" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 row">
+                        <label class="col-md-4 col-form-label fw-semibold">Gender <span class="text-danger">*</span></label>
+                        <div class="col-md-8 d-flex align-items-center" style="gap: 4rem;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="edit_driver_in_register_gender_of_driver" id="edit_driver_in_register_gender_of_driver_male" value="1" checked required>
+                                <label class="form-check-label" for="edit_driver_in_register_gender_of_driver_male">Male</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="edit_driver_in_register_gender_of_driver" id="edit_driver_in_register_gender_of_driver_female" value="0">
+                                <label class="form-check-label" for="edit_driver_in_register_gender_of_driver_female">Female</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_id_no" class="col-md-4 col-form-label fw-semibold">ID No. <span class="text-danger">*</span></label>
+                        <div class="col-md-8">
+                            <input type="text" name="edit_driver_in_register_id_no" id="edit_driver_in_register_id_no" maxlength="50" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_valid_from" class="col-md-4 col-form-label fw-semibold">
+                            Valid From <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-md-8">
+                            <input type="text" id="edit_driver_in_register_valid_from" name="edit_driver_in_register_valid_from" class="form-control driver-date-picker" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_valid_to" class="col-md-4 col-form-label fw-semibold">
+                            Valid To <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-md-8">
+                            <input type="text" id="edit_driver_in_register_valid_to" name="edit_driver_in_register_valid_to" class="form-control driver-date-picker" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_issued_by" class="col-md-4 col-form-label fw-semibold">Issued By <span class="text-danger">*</span></label>
+                        <div class="col-md-8">
+                            <select class="form-control" id="edit_driver_in_register_issued_by" name="edit_driver_in_register_issued_by" required>
+                                {{ issued_by_options | safe }}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_licence_no" class="col-md-4 col-form-label fw-semibold">Licence No. <span class="text-danger">*</span></label>
+                        <div class="col-md-8">
+                            <input type="text" name="edit_driver_in_register_licence_no" id="edit_driver_in_register_licence_no" maxlength="50" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_issue_no" class="col-md-4 col-form-label fw-semibold">Issue No. <span class="text-danger">*</span></label>
+                        <div class="col-md-8">
+                            <input type="text" name="edit_driver_in_register_issue_no" id="edit_driver_in_register_issue_no" maxlength="50" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row align-items-center">
+                        <label for="edit_driver_in_register_first_issue" class="col-md-4 col-form-label fw-semibold">
+                            First Issue <span class="text-danger">*</span>
+                        </label>
+                        <div class="col-md-8">
+                            <input type="text" id="edit_driver_in_register_first_issue" name="edit_driver_in_register_first_issue" class="form-control driver-date-picker" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="">
+                            Licence Code(s) <span class="text-danger">*</span>
+                        </div>
+
+                        <div class="card-body">
+
+                            <table class="table table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">#</th>
+                                        <th>Licence Code</th>
+                                        <th style="width: 10%;">Delete</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="licenceCodeTableBodyEditModal">
+                                    <tr>
+                                        <td class="text-end">1</td>
+
+                                        <td>
+                                            <select class="form-control licence-code-edit"
+                                                    name="licence_code_edit[]"
+                                                    required>
+                                                {{ licence_code_options | safe }}
+                                            </select>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger remove-licence-code-edit">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    id="btnAddLicenceCodeEdit">
+                                <i class="fa fa-plus"></i>
+                                Add Licence Code
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="">
+                            Driver Restriction(s)<span class="text-danger">*</span>
+                        </div>
+
+                        <div class="card-body">
+
+                            <table class="table table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">#</th>
+                                        <th>Driver Restriction</th>
+                                        <th style="width: 10%;">Delete</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="driverRestrictionTableBodyEditModal">
+                                    <tr>
+
+                                        <td class="text-end">1</td>
+
+                                        <td>
+                                            <select class="form-control driver-restriction-edit"
+                                                    name="driver_restrictions_edit[]"
+                                                    required>
+                                                {{ driver_restriction_options | safe }}
+                                            </select>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger remove-driver-restriction-edit">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    id="btnAddDriverRestrictionEdit">
+                                <i class="fa fa-plus"></i>
+                                Add Restriction
+                            </button>
+
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-outline-custom2" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-outline-custom" onclick="showDriverRegisterConfirmation('edit driver in register')">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>

@@ -1,9 +1,9 @@
 <!-- Approval Action Modal -->
-<div class="modal fade" id="vehicleVehicleTyreSizeEditModal" tabindex="-1" aria-labelledby="approvalActionModalLabel" aria-hidden="true">
+<div class="modal fade" id="drivingLicenceCodeEditModal" tabindex="-1" aria-labelledby="approvalActionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="approvalActionModalLabel">Edit Vehicle Tyre Size</h5>
+                <h5 class="modal-title" id="approvalActionModalLabel">Edit Driving Licence Code</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -11,12 +11,12 @@
             <div class="modal-body">
 
             <form id="editKeyProcessForm" class="p-4 rounded shadow-sm bg-white">
-                <input type="hidden" id="editVehicleTyreSizeId">
+                <input type="hidden" id="editDrivingLicenseCodeId">
 
                 <div class="mb-3 row align-items-center">
-                    <label for="vehicle_tyre_size_name_2" class="col-md-4 col-form-label fw-semibold">Vehicle Tyre Size <span class="text-danger">*</span></label>
+                    <label for="driving_licence_code_2" class="col-md-4 col-form-label fw-semibold">Driving Licence Code <span class="text-danger">*</span></label>
                     <div class="col-md-8">
-                        <input type="text" name="vehicle_tyre_size_name_2" id="vehicle_tyre_size_name_2" maxlength="50" class="form-control" required>
+                        <input type="text" name="driving_licence_code_2" id="driving_licence_code_2" maxlength="50" class="form-control" required>
                     </div>
                 </div>
             </form>
@@ -24,7 +24,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-outline-custom2" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary btn-outline-custom" id="confirmKeyProcessEditAction" onclick="showVehicleTyreSizeConfirmation('edit vehicle tyre size')">Update</button>
+                <button type="button" class="btn btn-primary btn-outline-custom" id="confirmKeyProcessEditAction" onclick="showDrivingLicenceCodeConfirmation('edit driving licence code')">Update</button>
             </div>
         </div>
     </div>

@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Vehicle Tyre Size
+    Driving Licence Code
 {% endblock %}
 
 {% block page_title %}
-    <div data-page-title>Vehicle Tyre Size</div>
+    <div data-page-title>Driving Licence Code</div>
 {% endblock %}
 
 
@@ -13,8 +13,8 @@
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Vehicle Tyre Size</span>
-            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addVehicleTyreSize()">Add Tyre Size</button>
+            <span>Driving Licence Code</span>
+            <button style="font-size: 18px;" class="btn-outline-custom" type="button" onclick="addDrivingLicenceCode()">Add Code</button>
         </div>
 
         <div class="card-body">
@@ -22,23 +22,23 @@
                 <thead>
                     <tr>
                         <th style="width: 5%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">#</th> <!-- Row number column -->
-                        <th style="">Vehicle Tyre Size</th>
-                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Tyre Size</th>
+                        <th style="">Driving Licence Code</th>
+                        <th style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false" >Edit Code</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for tyre_size in tyre_sizes %}
+                    {% for code in codes %}
                     <tr>
                         <td style="width: 5%; white-space: nowrap; text-align: left;">{{ loop.index }}</td> <!-- Display row number -->
-                        <td style="">{{ tyre_size.name }}</td>
+                        <td style="">{{ code.name }}</td>
                         <td style="width: 10%; white-space: nowrap; text-align: left;" data-orderable="false" data-ordering="false">
-                            <button class="btn-outline-custom edit-vehicle-tyre-size-btn" style="float: right;" type="button" data-vehicle-tyre-size-id="{{ tyre_size.id }}" data-vehicle-tyre-size-name="{{ tyre_size.name }}">Edit</button>
+                            <button class="btn-outline-custom edit-driving-licence-code-btn" style="float: right;" type="button" data-driving-licence-code-id="{{ code.id }}" data-driving-licence-code-name="{{ code.name }}">Edit</button>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
                         <td></td>
-                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No vehicle tyre size found.</td>
+                        <td style="text-align: center; max-width: 150px; word-break: break-all; white-space: normal;">No driving licence code found.</td>
                         <td></td>
                     </tr>
                     {% endfor %}
@@ -53,11 +53,11 @@
 // Validation Rules
 // =====================================
 
-window.textAreaRegexVehicleTyreSize = /^[A-Za-z0-9\s,.'#/\-]{3,255}$/;
+window.textAreaRegexDrivingLicenceCode = /^[A-Za-z0-9\s,.'#/\-]{1,255}$/;
 
-function showValidationErrorVehicleTyreSize($field, message) {
+function showValidationErrorDrivingLicenceCode($field, message) {
 
-    clearValidationErrorVehicleTyreSize($field);
+    clearValidationErrorDrivingLicenceCode($field);
 
     $field.addClass("is-invalid");
 
@@ -68,20 +68,20 @@ function showValidationErrorVehicleTyreSize($field, message) {
     `);
 }
 
-function clearValidationErrorVehicleTyreSize($field) {
+function clearValidationErrorDrivingLicenceCode($field) {
 
     $field.removeClass("is-invalid");
 
     $field.parent().find(".validation-error").remove();
 }
 
-function validateFieldVehicleTyreSize(selector, regex, message) {
+function validateFieldDrivingLicenceCode(selector, regex, message) {
 
     const $field = $(selector);
 
     const value = $field.val().trim();
 
-    clearValidationErrorVehicleTyreSize($field);
+    clearValidationErrorDrivingLicenceCode($field);
 
     // Empty values are allowed
     if (value === "") {
@@ -89,7 +89,7 @@ function validateFieldVehicleTyreSize(selector, regex, message) {
     }
 
     if (!regex.test(value)) {
-        showValidationErrorVehicleTyreSize(
+        showValidationErrorDrivingLicenceCode(
             $field,
             message
         );
@@ -98,29 +98,29 @@ function validateFieldVehicleTyreSize(selector, regex, message) {
     return true;
 }
 
-window.validationFieldsVehicleTyreSize =
-window.validationFieldsVehicleTyreSize || [
+window.validationFieldsDrivingLicenceCode =
+window.validationFieldsDrivingLicenceCode || [
     {
-        selector: "#vehicleTyreSizeName",
-        message: "Vehicle tyre size contains invalid characters."
+        selector: "#drivingLicenceCode",
+        message: "Driving licence code contains invalid characters."
     },
     {
-        selector: "#vehicle_tyre_size_name_2",
-        message: "Vehicle tyre size contains invalid characters."
+        selector: "#driving_licence_code_2",
+        message: "Driving licence code contains invalid characters."
     },
 ];
 
 // =========================
 // Real-time Validation
 // =========================
-window.validationFieldsVehicleTyreSize.forEach(field => {
+window.validationFieldsDrivingLicenceCode.forEach(field => {
 
     $(document).on("input blur", field.selector, function () {
 
         const value = $(this).val().trim();
 
         // Clear previous error
-        clearValidationErrorVehicleTyreSize($(this));
+        clearValidationErrorDrivingLicenceCode($(this));
 
         // Don't show an error while the field is empty.
         // The required validation will occur when the user clicks Add/Update.
@@ -128,32 +128,30 @@ window.validationFieldsVehicleTyreSize.forEach(field => {
             return;
         }
 
-        validateFieldVehicleTyreSize(
+        validateFieldDrivingLicenceCode(
             field.selector,
-            window.textAreaRegexVehicleTyreSize,
+            window.textAreaRegexDrivingLicenceCode,
             field.message
         );
-
     });
-
 });
 
-function validateVehicleTyreSizeForm(actionType) {
+function validateDrivingLicenceCodeForm(actionType) {
 
     let fields = [];
 
-    if (actionType === "add vehicle tyre size") {
+    if (actionType === "add driving licence code") {
 
         fields = [{
-            selector: "#vehicleTyreSizeName",
-            message: "Vehicle tyre size contains invalid characters."
+            selector: "#drivingLicenceCode",
+            message: "Driving licence code contains invalid characters."
         }];
 
-    } else if (actionType === "edit vehicle tyre size") {
+    } else if (actionType === "edit driving licence code") {
 
         fields = [{
-            selector: "#vehicle_tyre_size_name_2",
-            message: "Vehicle tyre size contains invalid characters."
+            selector: "#driving_licence_code_2",
+            message: "Driving licence code contains invalid characters."
         }];
     }
 
@@ -164,22 +162,22 @@ function validateVehicleTyreSizeForm(actionType) {
         const $field = $(field.selector);
         const value = $field.val().trim();
 
-        clearValidationErrorVehicleTyreSize($field);
+        clearValidationErrorDrivingLicenceCode($field);
 
         if (value === "") {
 
-            showValidationErrorVehicleTyreSize(
+            showValidationErrorDrivingLicenceCode(
                 $field,
-                "Vehicle tyre size cannot be left blank."
+                "Driving licence code cannot be left blank."
             );
 
             isValid = false;
             return;
         }
 
-        if (!validateFieldVehicleTyreSize(
+        if (!validateFieldDrivingLicenceCode(
                 field.selector,
-                window.textAreaRegexVehicleTyreSize,
+                window.textAreaRegexDrivingLicenceCode,
                 field.message
         )) {
             isValid = false;
@@ -206,17 +204,17 @@ function validateVehicleTyreSizeForm(actionType) {
         $("#flashMessageModal").modal("show");
     }
 
-    function addVehicleTyreSize() {
+    function addDrivingLicenceCode() {
 
         // Open the modal
-        $("#vehicleTyreSizeAddModal").modal("show");
+        $("#drivingLicenceCodeAddModal").modal("show");
     }
 
-    function showVehicleTyreSizeConfirmation(actionType) {
+    function showDrivingLicenceCodeConfirmation(actionType) {
         if (
-            (actionType === "add vehicle tyre size" ||
-             actionType === "edit vehicle tyre size") &&
-            !validateVehicleTyreSizeForm(actionType)
+            (actionType === "add driving licence code" ||
+             actionType === "edit driving licence code") &&
+            !validateDrivingLicenceCodeForm(actionType)
         ) {
             return;
         }
@@ -225,23 +223,23 @@ function validateVehicleTyreSizeForm(actionType) {
         let modalMessage = "";
 
         switch (actionType) {
-            case "add vehicle tyre size":
-                modalTitle = "Confirm Addition of Vehicle Tyre Size";
-                modalMessage = "Are you sure you want to add this vehicle tyre size?";
+            case "add driving licence code":
+                modalTitle = "Confirm Addition of Driving Licence Code";
+                modalMessage = "Are you sure you want to add this driving licence code?";
 
                 $("#confirmAction").off("click").on("click", () => {
                     $("#confirmationModal").modal("hide");
-                    registerVehicleTyreSize();
+                    registerDrivingLicenceCode();
                 });
                 break;
 
-            case "edit vehicle tyre size":
-                modalTitle = "Confirm Update of Vehicle Tyre Size";
-                modalMessage = "Are you sure you want to edit this vehicle tyre size?";
+            case "edit driving licence code":
+                modalTitle = "Confirm Update of Driving Licence Code";
+                modalMessage = "Are you sure you want to edit this driving licence code?";
 
                 $("#confirmAction").off("click").on("click", () => {
                     $("#confirmationModal").modal("hide");
-                    updateTyreSizeVehicle();
+                    updateDrivingLicenceCode();
                 });
                 break;
 
@@ -264,9 +262,9 @@ function validateVehicleTyreSizeForm(actionType) {
         }, 10);
     }
 
-    function registerVehicleTyreSize() {
+    function registerDrivingLicenceCode() {
 
-        const form = document.getElementById("addVehicleTyreSizeForm");
+        const form = document.getElementById("addDrivingLicenceCodeForm");
 
         if (!form.checkValidity()) {
             form.reportValidity();
@@ -274,30 +272,32 @@ function validateVehicleTyreSizeForm(actionType) {
         }
 
         const formData = {
-            vehicle_tyre_size_name: $("#vehicleTyreSizeName").val().trim(),
+            driving_licence_code: $("#drivingLicenceCode").val().trim(),
         };
 
-        // Step 1: Check if vehicle tyre size already exists
+        // Step 1: Check if driving licence code already exists
         $.ajax({
-            url: `/check-vehicle-tyre-size/${encodeURIComponent(formData.vehicle_tyre_size_name)}`,
+            url: `/check-driving-licence-code/${encodeURIComponent(formData.driving_licence_code)}`,
             type: "GET",
             success: function (response) {
                 if (response.exists) {
-                    showFlashMessage(`Vehicle tyre size, '${formData.vehicle_make_name}' already exists.`, "warning");
+                    showFlashMessage(`Driving licence code, '${formData.driving_licence_code}' already exists.`, "warning");
                     return;
                 }
 
-                // Step 2: Submit vehicle tyre size
+                // Step 2: Submit driving licence code
+
                 const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
                 $.ajax({
-                    url: "/admin-register-new-vehicle-tyre-size",
+                    url: "/admin-register-new-driving-licence-code",
                     type: "POST",
                     contentType: "application/json",
                     headers: {"X-CSRFToken": csrfToken},
                     data: JSON.stringify(formData),
                     success: function (response) {
-                        $("#addVehicleTyreSizeForm")[0].reset();
-                        $("#vehicleTyreSizeAddModal").modal("hide");
+                        $("#addDrivingLicenceCodeForm")[0].reset();
+                        $("#drivingLicenceCodeAddModal").modal("hide");
                         showFlashMessage(response.message, "success");
                         $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
                         $(".content").load(location.href + " .content > *", function() {
@@ -313,30 +313,30 @@ function validateVehicleTyreSizeForm(actionType) {
                 });
             },
             error: function () {
-                showFlashMessage("Failed to validate name of vehicle tyre size. Please contact your System Administrator.", "danger");
+                showFlashMessage("Failed to validate driving licence code. Please contact your System Administrator.", "danger");
             }
         });
     }
 
-    function updateTyreSizeVehicle() {
-        const form = document.getElementById("vehicleVehicleTyreSizeEditModal");
+    function updateDrivingLicenceCode() {
+        const form = document.getElementById("drivingLicenceCodeEditModal");
+        const driving_license_code_id = $("#editDrivingLicenseCodeId").val();
 
-        const vehicle_tyre_size_id = $("#editVehicleTyreSizeId").val();
         const formData = {
-            vehicle_tyre_size_id: vehicle_tyre_size_id,
-            vehicle_tyre_size_name_2: $("#vehicle_tyre_size_name_2").val(),
+            driving_license_code_id: driving_license_code_id,
+            driving_licence_code_2: $("#driving_licence_code_2").val(),
         };
 
         const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
         $.ajax({
-            url: "/admin-update-vehicle-tyre-size",
+            url: "/admin-update-driving-license-code",
             type: "POST",
             contentType: "application/json",
             headers: {"X-CSRFToken": csrfToken},
             data: JSON.stringify(formData),
             success: function (response) {
-                $("#vehicleVehicleTyreSizeEditModal").modal("hide");
+                $("#drivingLicenceCodeEditModal").modal("hide");
                 showFlashMessage(response.message, "success");
                 $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function () {
                     $(".content").load(location.href + " .content > *", function() {
@@ -345,33 +345,33 @@ function validateVehicleTyreSizeForm(actionType) {
                 });
             },
             error: function (xhr) {
-                let errorMessage = xhr.responseJSON?.error || "An error occurred while updating the vehicle tyre size.";
+                let errorMessage = xhr.responseJSON?.error || "An error occurred while updating the driving licence code.";
                 let messageType = xhr.responseJSON?.type || "danger";
                 showFlashMessage(errorMessage, messageType);
             }
         });
     }
 
-    $(document).off("click", ".edit-vehicle-tyre-size-btn").on("click", ".edit-vehicle-tyre-size-btn", function () {
+    $(document).off("click", ".edit-driving-licence-code-btn").on("click", ".edit-driving-licence-code-btn", function () {
 
-        const vehicle_tyre_size_id = $(this).data('vehicle-tyre-size-id');
+        const driving_licence_code_id = $(this).data('driving-licence-code-id');
 
         $.ajax({
-            url: "/get-vehicle-tyre-size-details",
+            url: "/get-driving-licence-code-details",
             type: "GET",
-            data: {  vehicle_tyre_size_id: vehicle_tyre_size_id  },
+            data: {  driving_licence_code_id: driving_licence_code_id  },
             success: function (data) {
                 // Populate modal fields
-                $("#vehicle_tyre_size_name_2").val(data.tyre_size_name);
+                $("#driving_licence_code_2").val(data.driving_code);
 
                 // Store ID in form using jQuery data
-                $("#editVehicleTyreSizeId").val(data.id);
+                $("#editDrivingLicenseCodeId").val(data.id);
 
                 // Show the modal
-                $("#vehicleVehicleTyreSizeEditModal").modal("show");
+                $("#drivingLicenceCodeEditModal").modal("show");
             },
             error: function () {
-                showFlashMessage("Failed to load vehicle tyre size details. Please contact your System Administrator.", "danger");
+                showFlashMessage("Failed to load driving licence code details. Please contact your System Administrator.", "danger");
             }
         });
     });
@@ -438,7 +438,7 @@ function validateVehicleTyreSizeForm(actionType) {
     }
 </style>
 
-    {% include 'includes/vehicle_tyre_size_add_modal.html' %}
-    {% include 'includes/vehicle_tyre_size_edit_modal.html' %}
+    {% include 'includes/driving_licence_code_add_modal.html' %}
+    {% include 'includes/driving_licence_code_edit_modal.html' %}
 
 {% endblock %}
