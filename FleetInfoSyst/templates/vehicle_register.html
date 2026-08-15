@@ -136,7 +136,7 @@
 {% set vehicle_system_user_options %}
     <option value="">Select the personnel responsible for the vehicle</option>
     {% for system_user in system_users %}
-        <option value="{{ system_user.username }}">{{ system_user.name }}</option>
+        <option value="{{ system_user.id }}">{{ system_user.name }}</option>
     {% endfor %}
 {% endset %}
 
@@ -150,387 +150,350 @@
 <div class="card">
     <form id="vehicleRegisterForm" method="post">
 
-        <input type="hidden" id="vehicle_id" name="vehicle_id" value="">
+        <input type="hidden" id="vehicle_id" name="vehicle_id" value="0">
 
         <div id="accordionSectionA">
 
-        <!-- Section A -->
-        <div class="card">
-            <div class="card-header" id="headingSectionA">
-                <h6 class="mb-0">
-                    <button class="accordion-button collapsed" type="button" data-toggle="collapse"
-                            data-target="#collapseSectionA" aria-expanded="false" aria-controls="collapseSectionA">
+            <!-- Section A -->
+            <div class="card">
+                <div class="card-header" id="headingSectionA">
+                    <h6 class="mb-0">
+                        <button class="accordion-button collapsed" type="button" data-toggle="collapse"
+                                data-target="#collapseSectionA" aria-expanded="false" aria-controls="collapseSectionA">
+                            <i class="fa fa-caret-right caret-icon2 mr-2"></i>
+                          SECTION A: CURRENT REGISTRATION IN UGANDA
+                        </button>
+                    </h6>
+                </div>
+
+                <div id="collapseSectionA" class="collapse" aria-labelledby="headingSectionA" data-parent="#accordionSectionA">
+                    <div class="card-body">
+                        <!-- Dynamic text and textarea fields -->
+                        {% set fields = [
+                            {"id": "registration_no", "label": "Registration Number *:", "rows": None, "placeholder": "Enter the registration number of the vehicle", "maxlength": 15},
+                            {"id": "place_of_registration", "label": "Place of Registration *:", "rows": None, "placeholder": "Enter the place of registration of the vehicle", "maxlength": 500},
+                        ] %}
+                        {% for field in fields %}
+                        <div class="mb-3">
+                            <label for="{{ field.id }}" class="form-label">{{ field.label }}</label>
+                            {% if field.rows %}
+                            <textarea class="form-control" id="{{ field.id }}" name="{{ field.id }}" rows="{{ field.rows }}" placeholder="{{ field.placeholder }}" {% if field.maxlength %} maxlength="{{ field.maxlength }}" {% endif %}></textarea>
+                            {% else %}
+                            <input
+                                type="text"
+                                class="form-control {% if field.class %}{{ field.class }}{% endif %}"
+                                id="{{ field.id }}"
+                                name="{{ field.id }}"
+                                value="{{ field.value | default('') }}"
+                                placeholder="{{ field.placeholder | default('') }}"
+                                autocomplete="off"
+                                {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <div class="mb-3">
+                            <label for="date_of_registration" class="form-label">
+                                Date of Registration *:
+                            </label>
+
+                            <input type="text" class="form-control date-picker" id="date_of_registration" name="date_of_registration" placeholder="Select the date of registration" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section B -->
+            <div class="card">
+                <div class="card-header" id="headingSectionB">
+                    <h6 class="mb-0">
+                        <button class="accordion-button collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapseSectionB" aria-expanded="false" aria-controls="collapseSectionB">
                         <i class="fa fa-caret-right caret-icon2 mr-2"></i>
-                      SECTION A: CURRENT REGISTRATION IN UGANDA
-                    </button>
-                </h6>
-            </div>
-
-            <div id="collapseSectionA" class="collapse" aria-labelledby="headingSectionA" data-parent="#accordionSectionA">
-                <div class="card-body">
-                    <!-- Dynamic text and textarea fields -->
-                    {% set fields = [
-                        {"id": "registration_no", "label": "Registration Number*:", "rows": None, "placeholder": "Enter the registration number of the vehicle", "maxlength": 15},
-                        {"id": "date_of_registration", "label": "Date of Registration*:", "class": "form-control date-picker", "placeholder": "Select the date of registration", "autocomplete": "off"},
-                        {"id": "place_of_registration", "label": "Place of Registration*:", "rows": None, "placeholder": "Enter the place of registration of the vehicle", "maxlength": 500},
-                    ] %}
-                    {% for field in fields %}
-                    <div class="mb-3">
-                        <label for="{{ field.id }}" class="form-label">{{ field.label }}</label>
-                        {% if field.rows %}
-                        <textarea class="form-control" id="{{ field.id }}" name="{{ field.id }}" rows="{{ field.rows }}" placeholder="{{ field.placeholder }}" {% if field.maxlength %} maxlength="{{ field.maxlength }}" {% endif %}></textarea>
-                        {% else %}
-                        <input
-                            type="text"
-                            class="form-control {% if field.class %}{{ field.class }}{% endif %}"
-                            id="{{ field.id }}"
-                            name="{{ field.id }}"
-                            value="{{ field.value | default('') }}"
-                            placeholder="{{ field.placeholder | default('') }}"
-                            autocomplete="off"
-                            {% if field.maxlength %}maxlength="{{ field.maxlength }}"{% endif %}>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                        SECTION B: BACKGROUND INFORMATION
+                        </button>
+                    </h6>
                 </div>
-            </div>
-        </div>
 
-        <!-- Section B -->
-        <div class="card">
-            <div class="card-header" id="headingSectionB">
-                <h6 class="mb-0">
-                    <button class="accordion-button collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapseSectionB" aria-expanded="false" aria-controls="collapseSectionB">
-                    <i class="fa fa-caret-right caret-icon2 mr-2"></i>
-                    SECTION B: BACKGROUND INFORMATION
-                    </button>
-                </h6>
-            </div>
-
-            <div id="collapseSectionB" class="collapse" aria-labelledby="headingSectionB" data-parent="#accordionSectionA">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="vehicle_condition_id" class="form-label">Condition*:</label>
-                        <select class="form-control" id="vehicle_condition_id" name="vehicle_condition_id" required>
-                            {{ vehicle_condition_options | safe }}
-                        </select>
-                    </div>                    
-                </div>
-            </div>
-        </div>
-
-        <!-- Section C -->
-        <div class="card">
-            <div class="card-header" id="headingSectionC">
-                <h6 class="mb-0">
-                    <button class="accordion-button collapsed" type="button" data-toggle="collapse"
-                          data-target="#collapseBreakdown" aria-expanded="false" aria-controls="collapseBreakdown">
-                    <i class="fa fa-caret-right caret-icon2 mr-2"></i>
-                    SECTION C: DETAILS OF VEHICLE / TRAILER / ENGINEERING
-                    </button>
-                </h6>
-            </div>
-
-            <div id="collapseBreakdown" class="collapse" aria-labelledby="headingSectionC" data-parent="#accordionSectionA">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="vehicle_vehicle_make_id" class="form-label">Make*:</label>
-                        <select class="form-control" id="vehicle_vehicle_make_id" name="vehicle_vehicle_make_id" required>
-                            {{ vehicle_make_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_vehicle_model_id" class="form-label">Manufacture’s Model*:</label>
-                        <select class="form-control" id="vehicle_vehicle_model_id" name="vehicle_vehicle_model_id" required>
-                            {{ vehicle_model_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_country_of_origin_id" class="form-label">Country of Origin*:</label>
-                        <select class="form-control" id="vehicle_country_of_origin_id" name="vehicle_country_of_origin_id" required>
-                            {{ vehicle_country_of_origin_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_body_description_id" class="form-label">Body Description*:</label>
-                        <select class="form-control" id="vehicle_body_description_id" name="vehicle_body_description_id" required>
-                            {{ vehicle_body_description_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_colour_id" class="form-label">Vehicle Colour*:</label>
-                        <select class="form-control" id="vehicle_colour_id" name="vehicle_colour_id" required>
-                            {{ vehicle_colour_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_year_of_manufacture_id" class="form-label">Vehicle Year of Manufacture*:</label>
-                        <select class="form-control"
-                                id="vehicle_year_of_manufacture_id"
-                                name="vehicle_year_of_manufacture_id"
-                                required>
-                            <option value="">-- Select the Year of Manufacture --</option>
-                            {% for year in manufacture_years %}
-                                <option value="{{ year }}">{{ year }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_classification_id" class="form-label">Classification*:</label>
-                        <select class="form-control" id="vehicle_classification_id" name="vehicle_classification_id" required>
-                            {{ vehicle_classification_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_fuel_type_id" class="form-label">Fuel Type*:</label>
-                        <select class="form-control" id="vehicle_fuel_type_id" name="vehicle_fuel_type_id" required>
-                            {{ vehicle_fuel_type_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_power_id" class="form-label">Power (in CC)*:</label>
-                        <input type="text" class="form-control" value="0" id="vehicle_power_id" name="vehicle_power_id"
-                               placeholder="Enter the Power of Vehicle (in CC)" inputmode="numeric" pattern="[0-9,]+" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_engine_no" class="form-label">Engine Number*:</label>
-                        <input type="text" class="form-control" id="vehicle_engine_no" name="vehicle_engine_no"
-                               placeholder="Enter the Engine Number of the Vehicle" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_chasis_no" class="form-label">Chassis Number*:</label>
-                        <input type="text" class="form-control" id="vehicle_chasis_no" name="vehicle_chasis_no"
-                               placeholder="Enter the Chasis Number of the Vehicle" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_net_weight_id" class="form-label">Net Weight (in Kgs)*:</label>
-                        <input type="text" class="form-control" value="0" id="vehicle_net_weight_id" name="vehicle_net_weight_id"
-                               placeholder="Enter the Net Weight of Vehicle (in Kgs)" inputmode="numeric" pattern="[0-9,]+" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_gross_weight_id" class="form-label">Gross Weight (Laden) (in Kgs)*:</label>
-                        <input type="text" class="form-control" value="0" id="vehicle_gross_weight_id" name="vehicle_gross_weight_id"
-                               placeholder="Enter the Gross Weight (Laden) of Vehicle (in Kgs)" inputmode="numeric" pattern="[0-9,]+" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_tyre_size_id" class="form-label">Tyre Size*:</label>
-                        <select class="form-control" id="vehicle_tyre_size_id" name="vehicle_tyre_size_id" required>
-                            {{ vehicle_tyre_size_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_wheels_no_id" class="form-label">Number of Wheels*:</label>
-                        <input type="text" class="form-control" value="0" id="vehicle_wheels_no_id" name="vehicle_wheels_no_id"
-                               placeholder="Enter the Number of Wheels of Vehicle" inputmode="numeric" pattern="[0-9]+" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_axles_no_id" class="form-label">Number of Axles*:</label>
-                        <input type="text" class="form-control" value="0" id="vehicle_axles_no_id" name="vehicle_axles_no_id"
-                               placeholder="Enter the Number of Axles of Vehicle" inputmode="numeric" pattern="[0-9]+" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_seating_capacity_id" class="form-label">Seating Capacity*:</label>
-                        <input type="text" class="form-control" value="0" id="vehicle_seating_capacity_id" name="vehicle_seating_capacity_id"
-                               placeholder="Enter the Seating Capacity of Vehicle" inputmode="numeric" pattern="[0-9]+" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_purpose_id" class="form-label">Purpose / Function*:</label>
-                        <select class="form-control" id="vehicle_purpose_id" name="vehicle_purpose_id" required>
-                            {{ vehicle_purpose_options | safe }}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vehicle_ownership_category_id" class="form-label">Category of Ownership*:</label>
-                        <select class="form-control" id="vehicle_ownership_category_id" name="vehicle_ownership_category_id" required>
-                            {{ vehicle_ownership_category_options | safe }}
-                        </select>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Section D -->
-        <div class="card">
-            <div class="card-header" id="headingAttachments">
-                <h6 class="mb-0">
-                    <button class="accordion-button collapsed" type="button" data-toggle="collapse"
-                      data-target="#collapseAttachments" aria-expanded="false" aria-controls="collapseAttachments">
-                    <i class="fa fa-caret-right caret-icon2 mr-2"></i>
-                    SECTION D: PARTICULARS AS TO CERTIFICATES
-                    </button>
-                </h6>
-
-                <div id="collapseAttachments" class="collapse" aria-labelledby="headingAttachments" data-parent="#accordionSectionA">
-                    <div class="card-body">
-                        <table class="table table-striped table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="text-end">#</th>
-                                    <th>File</th>
-                                    <th>Description</th>
-                                    <th>Download</th>
-                                    <th class="text-center">Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attachmentsTable">
-                                <tr>
-                                    <td class="text-end">1</td>
-                                    <td>
-                                        <input type="file" class="form-control" name="attachments[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
-                                    </td>
-                                    <td>
-                                        <textarea class="form-control" name="attachment_description[]" rows="2" placeholder="Enter description (optional)" maxlength="500"></textarea>
-                                    </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-secondary">
-                                            <i class="fa fa-download"></i>
-                                        </button>
-                                    </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeAttachmentRowActivityRequest(this)">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" class="text-end">
-                                        <button type="button" class="btn-outline-custom float-end" onclick="addAttachmentRowActivityRequest()">
-                                            <i class="fa fa-plus"></i> Add File
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section E -->
-        <div class="card">
-            <div class="card-header" id="headingSectionE">
-                <h6 class="mb-0">
-                    <button class="accordion-button collapsed" type="button" data-toggle="collapse"
-                      data-target="#collapseSectionE" aria-expanded="false" aria-controls="collapseSectionE">
-                    <i class="fa fa-caret-right caret-icon2 mr-2"></i>
-                    SECTION E: CURRENT OWNERSHIP IN UGANDA
-                    </button>
-                </h6>
-
-                <div id="collapseSectionE" class="collapse" aria-labelledby="headingSectionE" data-parent="#accordionSectionA">
+                <div id="collapseSectionB" class="collapse" aria-labelledby="headingSectionB" data-parent="#accordionSectionA">
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="vehicle_owner_tin_id" class="form-label">Vehicle Owner TIN*:</label>
-                            <select class="form-control" id="vehicle_owner_tin_id" name="vehicle_owner_tin_id" required>
-                                {{ vehicle_owner_tin_options | safe }}
+                            <label for="vehicle_condition_id" class="form-label">Condition *:</label>
+                            <select class="form-control" id="vehicle_condition_id" name="vehicle_condition_id" required>
+                                {{ vehicle_condition_options | safe }}
                             </select>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="vehicle_owner_name_id" class="form-label">Names*:</label>
-                            <select class="form-control" id="vehicle_owner_name_id" name="vehicle_owner_name_id" required>
-                                {{ vehicle_owner_name_options | safe }}
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="vehicle_district_id" class="form-label">District*:</label>
-                            <select class="form-control" id="vehicle_district_id" name="vehicle_district_id" required>
-                                {{ vehicle_district_options | safe }}
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="vehicle_county_id" class="form-label">County*:</label>
-                            <select class="form-control" id="vehicle_county_id" name="vehicle_county_id" required>
-                                {{ vehicle_county_options | safe }}
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="vehicle_owner_postal_address_id" class="form-label">Postal Address*:</label>
-                            <select class="form-control" id="vehicle_owner_postal_address_id" name="vehicle_owner_postal_address_id" required>
-                                {{ vehicle_owner_postal_address_options | safe }}
-                            </select>
-                        </div>
-
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Section F -->
-        <div class="card">
-            <div class="card-header" id="headingSectionF">
-                <h6 class="mb-0">
-                    <button class="accordion-button collapsed" type="button" data-toggle="collapse"
-                      data-target="#collapseSectionF" aria-expanded="false" aria-controls="collapseSectionF">
-                    <i class="fa fa-caret-right caret-icon2 mr-2"></i>
-                    SECTION F: UETCL ADMINISTRATION OF VEHICLE
-                    </button>
-                </h6>
+            <!-- Section C -->
+            <div class="card">
+                <div class="card-header" id="headingSectionC">
+                    <h6 class="mb-0">
+                        <button class="accordion-button collapsed" type="button" data-toggle="collapse"
+                              data-target="#collapseBreakdown" aria-expanded="false" aria-controls="collapseBreakdown">
+                        <i class="fa fa-caret-right caret-icon2 mr-2"></i>
+                        SECTION C: DETAILS OF VEHICLE / TRAILER / ENGINEERING
+                        </button>
+                    </h6>
+                </div>
 
-                <div id="collapseSectionF" class="collapse" aria-labelledby="headingSectionF" data-parent="#accordionSectionA">
+                <div id="collapseBreakdown" class="collapse" aria-labelledby="headingSectionC" data-parent="#accordionSectionA">
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="vehicle_responsible_personnel_id" class="form-label">Responsible Personnel*:</label>
-                            <select class="form-control" id="vehicle_responsible_personnel_id" name="vehicle_responsible_personnel_id" required>
-                                {{ vehicle_system_user_options | safe }}
+                            <label for="vehicle_make_id" class="form-label">Make *:</label>
+                            <select class="form-control" id="vehicle_make_id" name="vehicle_make_id" required>
+                                {{ vehicle_make_options | safe }}
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="vehicle_user_id" class="form-label">Vehicle User*:</label>
-                            <select class="form-control" id="vehicle_user_id" name="vehicle_user_id" required>
-                                {{ driver_with_licence_options | safe }}
+                            <label for="vehicle_model_id" class="form-label">Manufacturer’s Model *:</label>
+                            <select class="form-control" id="vehicle_model_id" name="vehicle_model_id" required>
+                                <option value="">Select Vehicle Manufacturer's Model</option>
                             </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_country_of_origin_id" class="form-label">Country of Origin *:</label>
+                            <select class="form-control" id="vehicle_country_of_origin_id" name="vehicle_country_of_origin_id" required>
+                                {{ vehicle_country_of_origin_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_body_description_id" class="form-label">Body Description *:</label>
+                            <select class="form-control" id="vehicle_body_description_id" name="vehicle_body_description_id" required>
+                                {{ vehicle_body_description_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_colour_id" class="form-label">Vehicle Colour *:</label>
+                            <select class="form-control" id="vehicle_colour_id" name="vehicle_colour_id" required>
+                                {{ vehicle_colour_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_year_of_manufacture_id" class="form-label">Vehicle Year of Manufacture *:</label>
+                            <select class="form-control"
+                                    id="vehicle_year_of_manufacture_id"
+                                    name="vehicle_year_of_manufacture_id"
+                                    required>
+                                <option value="">-- Select the Year of Manufacture --</option>
+                                {% for year in manufacture_years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_classification_id" class="form-label">Classification *:</label>
+                            <select class="form-control" id="vehicle_classification_id" name="vehicle_classification_id" required>
+                                {{ vehicle_classification_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_fuel_type_id" class="form-label">Fuel Type *:</label>
+                            <select class="form-control" id="vehicle_fuel_type_id" name="vehicle_fuel_type_id" required>
+                                {{ vehicle_fuel_type_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_power" class="form-label">Power (in CC) *:</label>
+                            <input type="text" class="form-control" value="0" id="vehicle_power" name="vehicle_power"
+                                   placeholder="Enter the Power of Vehicle (in CC)" inputmode="numeric" pattern="[0-9,.]+" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_engine_no" class="form-label">Engine Number *:</label>
+                            <input type="text" class="form-control" id="vehicle_engine_no" name="vehicle_engine_no"
+                                   placeholder="Enter the Engine Number of the Vehicle" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_chasis_no" class="form-label">Chassis Number *:</label>
+                            <input type="text" class="form-control" id="vehicle_chasis_no" name="vehicle_chasis_no"
+                                   placeholder="Enter the Chasis Number of the Vehicle" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_net_weight" class="form-label">Net Weight (in Kgs) *:</label>
+                            <input type="text" class="form-control" value="0" id="vehicle_net_weight" name="vehicle_net_weight"
+                                   placeholder="Enter the Net Weight of Vehicle (in Kgs)" inputmode="numeric" pattern="[0-9,.]+" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_gross_weight" class="form-label">Gross Weight (Laden) (in Kgs) *:</label>
+                            <input type="text" class="form-control" value="0" id="vehicle_gross_weight" name="vehicle_gross_weight"
+                                   placeholder="Enter the Gross Weight (Laden) of Vehicle (in Kgs)" inputmode="numeric" pattern="[0-9,.]+" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_tyre_size_id" class="form-label">Tyre Size *:</label>
+                            <select class="form-control" id="vehicle_tyre_size_id" name="vehicle_tyre_size_id" required>
+                                {{ vehicle_tyre_size_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_wheels_no" class="form-label">Number of Wheels *:</label>
+                            <input type="text" class="form-control" value="0" id="vehicle_wheels_no" name="vehicle_wheels_no"
+                                   placeholder="Enter the Number of Wheels of Vehicle" inputmode="numeric" pattern="[0-9]+" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_axles_no" class="form-label">Number of Axles *:</label>
+                            <input type="text" class="form-control" value="0" id="vehicle_axles_no" name="vehicle_axles_no"
+                                   placeholder="Enter the Number of Axles of Vehicle" inputmode="numeric" pattern="[0-9]+" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_seating_capacity" class="form-label">Seating Capacity *:</label>
+                            <input type="text" class="form-control" value="0" id="vehicle_seating_capacity" name="vehicle_seating_capacity"
+                                   placeholder="Enter the Seating Capacity of Vehicle" inputmode="numeric" pattern="[0-9]+" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_purpose_id" class="form-label">Purpose / Function *:</label>
+                            <select class="form-control" id="vehicle_purpose_id" name="vehicle_purpose_id" required>
+                                {{ vehicle_purpose_options | safe }}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="vehicle_ownership_category_id" class="form-label">Category of Ownership *:</label>
+                            <select class="form-control" id="vehicle_ownership_category_id" name="vehicle_ownership_category_id" required>
+                                {{ vehicle_ownership_category_options | safe }}
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section D -->
+            <div class="card">
+                <div class="card-header" id="headingAttachments">
+                    <h6 class="mb-0">
+                        <button class="accordion-button collapsed" type="button" data-toggle="collapse"
+                          data-target="#collapseAttachments" aria-expanded="false" aria-controls="collapseAttachments">
+                        <i class="fa fa-caret-right caret-icon2 mr-2"></i>
+                        SECTION D: PARTICULARS AS TO CERTIFICATES
+                        </button>
+                    </h6>
+
+                    <div id="collapseAttachments" class="collapse" aria-labelledby="headingAttachments" data-parent="#accordionSectionA">
+                        <div class="card-body">
+
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Final Action Buttons -->
-        <div class="mt-3 d-flex justify-content-center gap-5">
-            <button type="button" class="btn-outline-custom"
-                    style="margin: 0 1rem;"
-                    onclick="setActivityMode(1); handleActionActivityRequest('save request');">
-                Save Request
-            </button>
+            <!-- Section E -->
+            <div class="card">
+                <div class="card-header" id="headingSectionE">
+                    <h6 class="mb-0">
+                        <button class="accordion-button collapsed" type="button" data-toggle="collapse"
+                          data-target="#collapseSectionE" aria-expanded="false" aria-controls="collapseSectionE">
+                        <i class="fa fa-caret-right caret-icon2 mr-2"></i>
+                        SECTION E: CURRENT OWNERSHIP IN UGANDA
+                        </button>
+                    </h6>
 
-            <button type="button" class="btn-outline-custom"
-                    style="margin: 0 1rem;"
-                    onclick="setActivityMode(2); handleActionActivityRequest('submit request');">
-                Submit Request
-            </button>
-        </div>
+                    <div id="collapseSectionE" class="collapse" aria-labelledby="headingSectionE" data-parent="#accordionSectionA">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="vehicle_owner_tin_id" class="form-label">Vehicle Owner TIN *:</label>
+                                <select class="form-control" id="vehicle_owner_tin_id" name="vehicle_owner_tin_id" required>
+                                    {{ vehicle_owner_tin_options | safe }}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="vehicle_owner_name_id" class="form-label">Names *:</label>
+                                <select class="form-control" id="vehicle_owner_name_id" name="vehicle_owner_name_id" required>
+                                    {{ vehicle_owner_name_options | safe }}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="vehicle_district_id" class="form-label">District *:</label>
+                                <select class="form-control" id="vehicle_district_id" name="vehicle_district_id" required>
+                                    {{ vehicle_district_options | safe }}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="vehicle_county_id" class="form-label">County *:</label>
+                                <select class="form-control" id="vehicle_county_id" name="vehicle_county_id" required>
+                                    <option value="">Select Vehicle Owner's County</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="vehicle_owner_postal_address_id" class="form-label">Postal Address *:</label>
+                                <select class="form-control" id="vehicle_owner_postal_address_id" name="vehicle_owner_postal_address_id" required>
+                                    {{ vehicle_owner_postal_address_options | safe }}
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section F -->
+            <div class="card">
+                <div class="card-header" id="headingSectionF">
+                    <h6 class="mb-0">
+                        <button class="accordion-button collapsed" type="button" data-toggle="collapse"
+                          data-target="#collapseSectionF" aria-expanded="false" aria-controls="collapseSectionF">
+                        <i class="fa fa-caret-right caret-icon2 mr-2"></i>
+                        SECTION F: UETCL ADMINISTRATION OF VEHICLE
+                        </button>
+                    </h6>
+
+                    <div id="collapseSectionF" class="collapse" aria-labelledby="headingSectionF" data-parent="#accordionSectionA">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="vehicle_responsible_personnel_id" class="form-label">Responsible Personnel *:</label>
+                                <select class="form-control" id="vehicle_responsible_personnel_id" name="vehicle_responsible_personnel_id" required>
+                                    {{ vehicle_system_user_options | safe }}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="vehicle_user_id" class="form-label">Vehicle User *:</label>
+                                <select class="form-control" id="vehicle_user_id" name="vehicle_user_id" required>
+                                    {{ driver_with_licence_options | safe }}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Action Buttons -->
+            <div class="mt-3 d-flex justify-content-center gap-5">
+                <button type="button" class="btn-outline-custom"
+                        style="margin: 0 1rem;"
+                        onclick="handleVehicleRegisterAction('add vehicle');">
+                    Save Vehicle
+                </button>
+            </div>
         </div>
     </form>
 </div>
 
 <div class="card">
     <div class="card-header">
-        Saved Activity Requests
+        Vehicle Register
     </div>
 
     <div class="card-body">
@@ -538,45 +501,39 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Project Code</th>
-                    <th>Project Name</th>
-                    <th>registration_no</th>
-                    <th>Last Modified</th>
-                    <th>Status</th>
-                    <th>Approvals</th>
+                    <th>Registration</th>
+                    <th>Body</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Responsible</th>
+                    <th>User</th>
                     <th>Edit</th>
                     <th>Delete</th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for activity_request_detail in activity_request_details %}
+                {% for driver_register_detail in driver_register_details %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ activity_request_detail.project_code }}</td>
-                    <td>{{ activity_request_detail.project_name }}</td>
-                    <td>{{ activity_request_detail.registration_no }}</td>
-                    <td>{{ activity_request_detail.last_modified.strftime('%Y-%m-%d %I:%M %p') }}</td>
-                    <td>{{ activity_request_detail.status }}</td>
+                    <td>{{ driver_register_detail.registration_no }}</td>
+                    <td>{{ driver_register_detail.body_description }}</td>
+                    <td>{{ driver_register_detail.vehicle_make }}</td>
+                    <td>{{ driver_register_detail.vehicle_model }}</td>
+                    <td>{{ driver_register_detail.responsible }}</td>
+                    <td>{{ driver_register_detail.vehicle_user }}</td>
                     <td class="text-center" data-orderable="false" data-ordering="false">
-                        <button class="btn btn-sm btn-outline-custom view-request-btn"
-                                type="button"
-                                data-activity-request-id="{{ activity_request_detail.id }}">
-                                    <i class="fa-solid fa-circle-check"></i>
-                        </button>
-                    </td>
-                    <td class="text-center" data-orderable="false" data-ordering="false">
-                        <button class="btn btn-sm btn-secondary edit-saved-activity-request-btn" style="float: center;"
-                                type="button" saved-activity-request-id="{{ activity_request_detail.id }}">
+                        <button class="btn btn-sm btn-secondary edit-saved-vehicle-btn" style="float: center;"
+                                type="button" data-saved-vehicle-id="{{ driver_register_detail.id }}">
                                     <i class="fa-solid fa-pen"></i>
                         </button>
                     </td>
                     <td class="text-center" data-orderable="false" data-ordering="false">
                         <button
-                            class="btn btn-sm btn-danger delete-saved-activity-request-btn"
+                            class="btn btn-sm btn-danger delete-saved-vehicle-btn"
                             type="button"
-                            data-activity-id="{{ activity_request_detail.id }}"
-                            onclick="handleActionActivityRequest('delete request', this)">
+                            data-vehicle-id="{{ driver_register_detail.id }}"
+                            onclick="handleVehicleRegisterAction('delete vehicle', this)">
                             <i class="fa fa-trash"></i>
                         </button>
                     </td>
@@ -588,430 +545,504 @@
 </div>
 
 <script>
-    window.currentActivityRequestId = window.currentActivityRequestId || 0;
-    window.deleteActivityRequestId = window.deleteActivityRequestId || 0;
-    window.activityRequestMode = window.activityRequestMode || 1; // 1 = Save Mode, 2 = Submit Mode
-    window.workFlowId = 1;
 
-    function setActivityMode(mode) {
-        window.activityRequestMode = mode; // 1 = Save, 2 = Submit
-        console.log("Activity mode set to:", mode === 1 ? "Save" : "Submit");
-    }
+    // Global vehicle tracker
+    window.currentVehicleId = 0;
 
-    function handleActionActivityRequest(actionType, buttonElem = null) {
-        // Skip validation for delete requests
-        if (actionType !== "delete request" && !validateFormActivityRequest()) {
-            return; // Stop if form is invalid
-        }
+    function formatDecimalVehicleField(input) {
 
-        // For delete requests, capture the ID from the clicked button
-        if (actionType === "delete request" && buttonElem) {
-            window.deleteActivityRequestId = $(buttonElem).data("activity-id");
-        }
+        let value = input.value
+            .replace(/[^0-9.]/g, "")      // allow digits and decimal point
+            .replace(/(\..*)\./g, "$1");  // allow only one decimal point
 
-        // Show confirmation modal for the action
-        showConfirmationActivityRequest(actionType);
-    }
-
-function recalculateKeyProcessBalances() {
-
-    const processBalances = {};
-
-    // Get original balance for each Key Process
-    $("#taskInputs tr").each(function () {
-
-        const $row = $(this);
-        const processId = $row.find(".key-process-dropdown").val();
-
-        if (!processId) return;
-
-        if (!(processId in processBalances)) {
-
-            processBalances[processId] =
-                parseFloat(
-                    $row.find(".available-credit-points")
-                        .attr("data-original")
-                ) || 0;
-        }
-    });
-
-    // Process rows top-to-bottom
-    $("#taskInputs tr").each(function () {
-
-        const $row = $(this);
-
-        const processId =
-            $row.find(".key-process-dropdown").val();
-
-        const $available =
-            $row.find(".available-credit-points");
-
-        const $setPoints =
-            $row.find(".set-credit-points");
-
-        if (!processId) {
-            $available.val("0");
+        if (!value) {
+            input.value = "";
             return;
         }
 
-        let runningBalance = processBalances[processId];
+        const parts = value.split(".");
 
-        const setPoints =
-            parseFloat(
-                ($setPoints.val() || "0")
-                    .replace(/,/g, "")
-            ) || 0;
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-        // Deduct this row's allocation
-        runningBalance -= setPoints;
-
-        // Show balance after this row
-        $available.val(
-            Math.max(runningBalance, 0)
-                .toLocaleString("en-US")
-        );
-
-        // Save for next row of same process
-        processBalances[processId] = runningBalance;
-    });
-}
-
-$(document).on(
-    "input",
-    ".set-credit-points",
-    function () {
-
-        formatActivityRequestCreditPoints(this);
-
-    }
-);
-
-function formatActivityRequestCreditPoints(input) {
-
-    const value = input.value
-        .replace(/,/g, "")
-        .replace(/[^0-9]/g, "");
-
-    input.value =
-        value === ""
-            ? "0"
-            : parseInt(value, 10).toLocaleString("en-US");
-
-    const $row = $(input).closest("tr");
-
-    // remove previous validation
-    $(input).removeClass("is-invalid");
-    $row.find(".credit-points-error").remove();
-    $row.find(".validation-error").remove();
-
-        recalculateKeyProcessBalances();
-
-const processId =
-    $row.find(".key-process-dropdown").val();
-
-const originalBalance =
-    parseFloat(
-        $row.find(".available-credit-points")
-            .attr("data-original")
-    ) || 0;
-
-if (!processId || originalBalance <= 0) {
-    return;
-}
-
-    // validate against available balance before this row
-    const availableBeforeRow =
-        getAvailableBalanceBeforeRow($row);
-
-    const requestedPoints =
-        parseFloat($(input).val().replace(/,/g, "")) || 0;
-
-        $row.find(".credit-points-error").remove();
-        $row.find(".validation-error").remove();
-
-    if (requestedPoints > availableBeforeRow) {
-
-        $(input).addClass("is-invalid");
-
-        $(input).after(`
-            <small class="text-danger credit-points-error d-block mt-1">
-                Credit points requested cannot exceed available credit points (${availableBeforeRow.toLocaleString("en-US")}).
-            </small>
-        `);
+        input.value = parts.join(".");
     }
 
-}
+    function formatVehicleNumberField(input) {
 
-function getAvailableBalanceBeforeRow($currentRow) {
+        let value = input.value.replace(/\D/g, "");
 
-    const processId =
-        $currentRow.find(".key-process-dropdown").val();
-
-    if (!processId) {
-        return 0;
-    }
-
-    const originalBalance =
-        parseFloat(
-            $currentRow
-                .find(".available-credit-points")
-                .attr("data-original")
-        ) || 0;
-
-    let consumed = 0;
-
-    $("#taskInputs tr").each(function () {
-
-        if ($(this).is($currentRow)) {
-            return false; // stop loop
+        if (value) {
+            input.value = parseInt(value, 10).toLocaleString("en-US");
+        } else {
+            input.value = "";
         }
+    }
 
-        const rowProcessId =
-            $(this).find(".key-process-dropdown").val();
-
-        if (rowProcessId === processId) {
-
-            consumed +=
-                parseFloat(
-                    $(this)
-                        .find(".set-credit-points")
-                        .val()
-                        .replace(/,/g, "")
-                ) || 0;
-        }
-    });
-
-    return Math.max(originalBalance - consumed, 0);
-}
-
-    $(document).off("change", ".key-process-dropdown").on("change", ".key-process-dropdown", function() {
-            const projectId = $("#project_id").val();
-            const keyProcessId = $(this).val();
-
-            const $row = $(this).closest("tr");
-
-            loadAvailableCreditPoints(
-                projectId,
-                keyProcessId,
-                currentActivityRequestId,
-                $row
-            );
-
-            const $setPoints =
-                $row.find(".set-credit-points");
-
-            formatActivityRequestCreditPoints(
-                $setPoints[0]
-            );
-
-            recalculateKeyProcessBalances();
+    $(document).on(
+        "input",
+        "#vehicle_power, #vehicle_net_weight, #vehicle_gross_weight",
+        function () {
+            formatDecimalVehicleField(this);
         }
     );
 
-    function validateFormActivityRequest() {
+    $(document).on(
+        "input",
+        "#vehicle_wheels_no, #vehicle_axles_no, #vehicle_seating_capacity",
+        function () {
+            formatVehicleNumberField(this);
+        }
+    );
+
+    // =====================================
+    // Vehicle Register Regex Rules
+    // =====================================
+
+    window.textRegexVehicleRegister = /^[A-Za-z0-9\s\-\/]{1,50}$/;
+
+    // =====================================
+    // Vehicle Register Validation
+    // =====================================
+
+    window.vehicleRegisterValidationRules =
+    window.vehicleRegisterValidationRules || [
+        {
+            selector: "#project_id",
+            type: "select",
+            requiredMessage: "Please select a project.",
+            section: "#collapseSectionA"
+        },
+        {
+            selector: "#registration_no",
+            type: "text",
+            regex: window.textRegexVehicleRegister,
+            requiredMessage: "Registration Number cannot be left blank.",
+            invalidMessage: "Registration Number contains invalid characters.",
+            section: "#collapseSectionA"
+        },
+        {
+            selector: "#date_of_registration",
+            type: "date",
+            requiredMessage: "Date of Registration cannot be left blank.",
+            section: "#collapseSectionA"
+        },
+        {
+            selector: "#place_of_registration",
+            type: "text",
+            regex: window.textRegexVehicleRegister,
+            requiredMessage: "Place of Registration cannot be left blank.",
+            invalidMessage: "Place of Registration contains invalid characters.",
+            section: "#collapseSectionA"
+        },
+
+        // Section B
+        {
+            selector: "#vehicle_condition_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle condition.",
+            section: "#collapseSectionB"
+        },
+
+        // Section C
+        {
+            selector: "#vehicle_make_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle make.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_model_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle model.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_country_of_origin_id",
+            type: "select",
+            requiredMessage: "Please select the country of origin.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_body_description_id",
+            type: "select",
+            requiredMessage: "Please select the body description.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_colour_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle colour.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_year_of_manufacture_id",
+            type: "select",
+            requiredMessage: "Please select the year of manufacture.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_classification_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle classification.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_fuel_type_id",
+            type: "select",
+            requiredMessage: "Please select the fuel type.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_power",
+            type: "number",
+            requiredMessage: "Power cannot be left blank.",
+            invalidMessage: "Power must be a valid positive number.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_engine_no",
+            type: "text",
+            regex: window.textRegexVehicleRegister,
+            requiredMessage: "Engine Number cannot be left blank.",
+            invalidMessage: "Engine Number contains invalid characters.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_chasis_no",
+            type: "text",
+            regex: window.textRegexVehicleRegister,
+            requiredMessage: "Chassis Number cannot be left blank.",
+            invalidMessage: "Chassis Number contains invalid characters.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_net_weight",
+            type: "number",
+            requiredMessage: "Net Weight cannot be left blank.",
+            invalidMessage: "Net Weight must be a valid positive number.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_gross_weight",
+            type: "number",
+            requiredMessage: "Gross Weight cannot be left blank.",
+            invalidMessage: "Gross Weight must be a valid positive number.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_tyre_size_id",
+            type: "select",
+            requiredMessage: "Please select the tyre size.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_wheels_no",
+            type: "integer",
+            requiredMessage: "Number of Wheels cannot be left blank.",
+            invalidMessage: "Number of Wheels must be a valid whole number.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_axles_no",
+            type: "integer",
+            requiredMessage: "Number of Axles cannot be left blank.",
+            invalidMessage: "Number of Axles must be a valid whole number.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_seating_capacity",
+            type: "integer",
+            requiredMessage: "Seating Capacity cannot be left blank.",
+            invalidMessage: "Seating Capacity must be a valid whole number.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_purpose_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle purpose/function.",
+            section: "#collapseBreakdown"
+        },
+        {
+            selector: "#vehicle_ownership_category_id",
+            type: "select",
+            requiredMessage: "Please select the ownership category.",
+            section: "#collapseBreakdown"
+        },
+
+        // Section E
+        {
+            selector: "#vehicle_owner_tin_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle owner's TIN.",
+            section: "#collapseSectionE"
+        },
+        {
+            selector: "#vehicle_owner_name_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle owner's name.",
+            section: "#collapseSectionE"
+        },
+        {
+            selector: "#vehicle_district_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle owner's district.",
+            section: "#collapseSectionE"
+        },
+        {
+            selector: "#vehicle_county_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle owner's county.",
+            section: "#collapseSectionE"
+        },
+        {
+            selector: "#vehicle_owner_postal_address_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle owner's postal address.",
+            section: "#collapseSectionE"
+        },
+
+        // Section F
+        {
+            selector: "#vehicle_responsible_personnel_id",
+            type: "select",
+            requiredMessage: "Please select the responsible personnel.",
+            section: "#collapseSectionF"
+        },
+        {
+            selector: "#vehicle_user_id",
+            type: "select",
+            requiredMessage: "Please select the vehicle user.",
+            section: "#collapseSectionF"
+        }
+    ];
+
+    // =====================================
+    // Validation Error Helpers
+    // =====================================
+
+    function showVehicleValidationError($field, message) {
+
+        clearVehicleValidationError($field);
+
+        $field.addClass("is-invalid");
+
+        $field.after(`
+            <div class="text-danger validation-error small">
+                ${message}
+            </div>
+        `);
+    }
+
+    function clearVehicleValidationError($field) {
+
+        $field.removeClass("is-invalid");
+
+        $field.siblings(".validation-error").remove();
+    }
+
+    function clearVehicleRegisterValidation() {
+
+        $("#vehicleRegisterForm").find(".is-invalid").removeClass("is-invalid");
+
+        $("#vehicleRegisterForm").find(".validation-error").remove();
+    }
+
+    function validateVehicleRegisterField(rule, showRequired = true) {
+
+        const $field = $(rule.selector);
+
+        if (!$field.length) {
+            return true;
+        }
+
+        const value = String($field.val() ?? "").trim();
+
+        clearVehicleValidationError($field);
+
+        // Required validation
+        if (!value) {
+
+            if (showRequired) {
+                showVehicleValidationError(
+                    $field,
+                    rule.requiredMessage
+                );
+            }
+
+            return !showRequired;
+        }
+
+        // Regex validation
+        if (
+            rule.regex &&
+            value &&
+            !rule.regex.test(value)
+        ) {
+            showVehicleValidationError(
+                $field,
+                rule.invalidMessage
+            );
+
+            return false;
+        }
+
+        // Numeric validation
+        if (rule.type === "number") {
+
+            const numericValue = Number(
+                value.replace(/,/g, "")
+            );
+
+            if (!Number.isFinite(numericValue) || numericValue < 0) {
+
+                showVehicleValidationError(
+                    $field,
+                    rule.invalidMessage
+                );
+
+                return false;
+            }
+        }
+
+        // Integer validation
+        if (rule.type === "integer") {
+
+            const numericValue = Number(
+                value.replace(/,/g, "")
+            );
+
+            if (
+                !Number.isInteger(numericValue) ||
+                numericValue < 0
+            ) {
+
+                showVehicleValidationError(
+                    $field,
+                    rule.invalidMessage
+                );
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // =====================================
+    // Real-time Vehicle Register Validation
+    // =====================================
+
+    window.vehicleValidationSelectors =
+    window.vehicleValidationSelectors ||
+        window.vehicleRegisterValidationRules
+            .map(rule => rule.selector)
+            .join(", ");
+
+    $(document)
+        .off(
+            "input.vehicleRegisterValidation " +
+            "blur.vehicleRegisterValidation " +
+            "change.vehicleRegisterValidation",
+            window.vehicleValidationSelectors
+        ).on(
+            "input.vehicleRegisterValidation " +
+            "blur.vehicleRegisterValidation " +
+            "change.vehicleRegisterValidation",
+            window.vehicleValidationSelectors,
+            function () {
+
+                const rule =
+                    window.vehicleRegisterValidationRules.find(
+                        item => item.selector === `#${this.id}`
+                    );
+
+                if (!rule) {
+                    return;
+                }
+
+                // Real-time validation should not display
+                // "required" messages for empty fields.
+                validateVehicleRegisterField(rule, false);
+            }
+        );
+
+    // =====================================
+    // Complete Vehicle Register Validation
+    // =====================================
+
+    function validateVehicleRegisterForm() {
+
         let isValid = true;
 
-        // Clear old errors
-        $(".text-danger.validation-error").remove();
+        const invalidSections = new Set();
 
-        // Track which accordions need to open
-        let invalidSections = new Set();
+        // Clear previous errors
+        clearVehicleRegisterValidation();
 
-        // --- Check Activity Overview ---
+        window.vehicleRegisterValidationRules.forEach(rule => {
 
-        const $projectField = $("#project_id");
-        const project = $projectField.val()?.trim() || "";
+            if (!validateVehicleRegisterField(rule, true)) {
 
-        // Remove existing validation error
-        $projectField.next(".validation-error").remove();
-
-        if (!project) {
-            isValid = false;
-
-            const errorMsg = `
-                <div class="text-danger validation-error small">
-                    Please select a project.
-                </div>
-            `;
-
-            $projectField.after(errorMsg);
-            invalidSections.add("#collapseSectionA");
-
-            // Optional: highlight field
-            $projectField.addClass("is-invalid");
-        } else {
-            $projectField.removeClass("is-invalid");
-        }
-
-        const registration_noVal = $("#registration_no").val()?.trim() || "";
-
-        if (registration_noVal === "") {
-            isValid = false;
-            $("#registration_no").after('<div class="text-danger validation-error small">registration_no is required.</div>');
-            invalidSections.add("#collapseSectionA");
-        }
-
-        const date_of_registrationVal = $("#date_of_registration").val()?.trim() || "";
-        if (date_of_registrationVal === "") {
-            isValid = false;
-            $("#date_of_registration").after('<div class="text-danger validation-error small">date_of_registration are required.</div>');
-            invalidSections.add("#collapseSectionA");
-        }
-
-        // --- Check Team Members ---
-        let teamRows = $("#teamCompositionInputs tr");
-        let hasValidTeamMember = false;
-
-        teamRows.each(function() {
-            const $row = $(this);
-            const member = $row.find("select[name='team_member_names']").val();
-            const role = $row.find("select[name='team_member_role']").val();
-
-            // Remove previous row-level errors
-            $row.find(".text-danger.validation-error").remove();
-
-            if (!member || !role) {
                 isValid = false;
-                $row.find("td:last").append('<div class="text-danger validation-error small">Select both member and role.</div>');
-                invalidSections.add("#collapseSectionB");
-            } else {
-                hasValidTeamMember = true;
+
+                if (rule.section) {
+                    invalidSections.add(rule.section);
+                }
             }
         });
 
-        if (!hasValidTeamMember) {
-            isValid = false;
-            if (!$("#teamCompositionInputs").find(".text-danger.validation-error").length) {
-                $("#teamCompositionInputs").after('<div class="text-danger validation-error small">At least one team member with a role is required.</div>');
-            }
-            invalidSections.add("#collapseSectionB");
-        }
-
-// --- Check Task Rows ---
-let taskRows = $("#taskInputs tr").filter(function() {
-    return $(this).find("textarea[name='task[]']").length > 0;
-});
-
-let hasValidTask = false;
-
-taskRows.each(function() {
-
-    const $row = $(this);
-
-    const taskName = $row.find("textarea[name='task[]']").val()?.trim() || "";
-    const keyProcess = $row.find("select[name='key_process_names']").val() || "";
-    const startDate = $row.find("input.start-date").val()?.trim() || "";
-    const endDate = $row.find("input.end-date").val()?.trim() || "";
-
-    const $setCreditPoints = $row.find(".set-credit-points");
-    const $availableCreditPoints = $row.find(".available-credit-points");
-
-    const setPoints =
-        parseFloat($setCreditPoints.val()?.replace(/,/g, "")) || 0;
-
-    const availableBeforeRow =
-        getAvailableBalanceBeforeRow($row);
-
-    $row.find(".text-danger.validation-error").remove();
-    $setCreditPoints.removeClass("is-invalid");
-
-    // Standard validation
-    if (!taskName || !keyProcess || !startDate || !endDate) {
-
-        isValid = false;
-
-        $row.find("td:last").append(
-            '<div class="text-danger validation-error small">Fill all fields in this row.</div>'
-        );
-
-        invalidSections.add("#collapseBreakdown");
-    }
-
-    // Credit points cannot be zero
-    if (setPoints <= 0) {
-
-        isValid = false;
-
-        $setCreditPoints.addClass("is-invalid");
-
-        $setCreditPoints.after(`
-            <div class="text-danger validation-error small">
-                Credit points requested must be greater than zero.
-            </div>
-        `);
-
-        invalidSections.add("#collapseBreakdown");
-    }
-
-    // Credit points cannot exceed available balance
-    if (setPoints > availableBeforeRow) {
-
-        isValid = false;
-
-        $setCreditPoints.addClass("is-invalid");
-
-        $setCreditPoints.after(`
-            <div class="text-danger validation-error small">
-                Credit points requested cannot exceed available credit points
-                (${availableBeforeRow.toLocaleString("en-US")}).
-            </div>
-        `);
-
-        invalidSections.add("#collapseBreakdown");
-    }
-
-    // Row is valid only if all validations pass
-    if (
-        taskName &&
-        keyProcess &&
-        startDate &&
-        endDate &&
-        setPoints > 0 &&
-        setPoints <= availableBeforeRow
-    ) {
-        hasValidTask = true;
-    }
-});
-
-        // --- Expand invalid accordions ---
-        invalidSections.forEach(id => $(id).collapse("show"));
+        // Open sections containing errors
+        invalidSections.forEach(section => {
+            $(section).collapse("show");
+        });
 
         return isValid;
     }
 
-    function showConfirmationActivityRequest(actionType) {
+    window.deleteActivityRequestId = window.deleteActivityRequestId || 0;
+    window.workFlowId = 1;
+
+    function handleVehicleRegisterAction(actionType, buttonElem = null) {
+
+        // Delete is handled separately and does not require
+        // Vehicle Register form validation.
+        if (
+            actionType !== "delete vehicle" &&
+            !validateVehicleRegisterForm()
+        ) {
+            return;
+        }
+
+        if (
+            actionType === "delete vehicle" &&
+            buttonElem
+        ) {
+            window.deleteActivityRequestId =
+                $(buttonElem).data("activity-id");
+        }
+
+        showConfirmationVehicleRegister(actionType);
+    }
+
+    function showConfirmationVehicleRegister(actionType) {
         let modalTitle = "";
         let modalMessage = "";
 
-        if (actionType === "save request" && currentActivityRequestId === 0) {
+        if (actionType === "add vehicle" && window.currentVehicleId === 0) {
             modalTitle = "Save Confirmation";
-            modalMessage = "Are you sure you want to save this request?";
+            modalMessage = "Are you sure you want to save this vehicle?";
             $("#confirmAction").off("click").on("click", function() {
                 $("#confirmationModal").modal("hide");
-                saveActivityRequest(false, null);
+                saveVehicle(false, null);
             });
-        } else if (actionType === "save request" && currentActivityRequestId !== 0) {
+        } else if (actionType === "add vehicle" && window.currentVehicleId !== 0) {
             modalTitle = "Update Confirmation";
-            modalMessage = "Are you sure you want to update this request?";
+            modalMessage = "Are you sure you want to update this vehicle?";
             $("#confirmAction").off("click").on("click", function() {
                 $("#confirmationModal").modal("hide");
-                saveActivityRequest(true, currentActivityRequestId);
+                saveVehicle(true, currentVehicleId);
             });
-        } else if (actionType === "submit request" && currentActivityRequestId === 0) {
-            modalTitle = "Submission Confirmation";
-            modalMessage = "Are you sure you want to submit this request?";
-            $("#confirmAction").off("click").on("click", function() {
-                $("#confirmationModal").modal("hide");
-                saveActivityRequest(false, null);
-            });
-        } else if (actionType === "submit request" && currentActivityRequestId !== 0) {
-            modalTitle = "Submission Confirmation";
-            modalMessage = "Are you sure you want to submit this request?";
-            $("#confirmAction").off("click").on("click", function() {
-                $("#confirmationModal").modal("hide");
-                saveActivityRequest(true, currentActivityRequestId);
-            });
-        } else if (actionType === "delete request") {
+        } else if (actionType === "delete vehicle") {
             modalTitle = "Deletion Confirmation";
             modalMessage = "Are you sure you want to delete this request?";
             $("#confirmAction").off("click").on("click", function() {
@@ -1036,483 +1067,95 @@ taskRows.each(function() {
         }, 10);
     }
 
-    function addTeamMember() {
-        const $tbody = $("#teamCompositionInputs");
-        const newRowIndex = $tbody.find("tr").length + 1; // count existing rows + 1
+    function initDatePickersVehicleRegister(context) {
+    
+        context = (context instanceof jQuery)
+            ? context
+            : $(context || document);
 
-        const newRow = $(`
-          <tr>
-              <td class="text-end">${newRowIndex}</td>
-              <td><select class="form-control" name="team_member_names">{{ user_options | safe }}</select></td>
-              <td><select class="form-control" name="team_member_role">{{ team_role_options | safe }}</select></td>
-              <td class="text-center">
-                <button type="button" class="btn btn-sm btn-danger" onclick="removeFieldActivityRequest(this)">
-                  <i class="fa fa-trash"></i>
-                </button>
-              </td>
-          </tr>
-      `);
+        context.find(".date-picker").addBack(".date-picker").each(function() {
 
-        $tbody.append(newRow);
+                // Already initialized
+                if (this._flatpickr) {
+                    return;
+                }
+
+                flatpickr(this, {
+                    enableTime: false,
+                    dateFormat: "Y-m-d",
+                    allowInput: true,
+                    defaultDate: this.value || "today",
+                    maxDate: "today"
+                });
+            });
     }
 
-    function addTask() {
+    function saveVehicle() {
 
-        const $tbody = $("#taskInputs");
-        const newRowIndex = $tbody.find("tr").length + 1; // count existing rows + 1
+        const form = document.getElementById("vehicleRegisterForm");
 
-        const newRow = $(`
-          <tr>
-              <td class="text-end">${newRowIndex}</td>
-              <td>
-                  <textarea class="form-control" name="task[]" rows="2"
-                            placeholder="Enter task name" maxlength="150"></textarea>
-              </td>
-              <td>
-                <select class="form-control key-process-dropdown" name="key_process_names">
-                    <option value="">Select a Key Process</option>
-                </select>
-              </td>
-                <td>
-                    <input type="text"
-                       class="form-control available-credit-points"
-                       name="available_credit_points[]"
-                       value="0"
-                       data-original="0"
-                       style="text-align: right;"
-                       inputmode="numeric"
-                       pattern="[0-9,]+"
-                       oninput="formatActivityRequestCreditPoints(this)"
-                       required disabled>
-                </td>
-                <td>
-                    <input type="text"
-                       class="form-control set-credit-points"
-                       name="set_credit_points"
-                       value="0"
-                       style="text-align: right;"
-                       inputmode="numeric"
-                       pattern="[0-9,]+"
-                       oninput="formatActivityRequestCreditPoints(this)"
-                       required>
-                </td>
-              <td>
-                  <input type="text" class="form-control start-date"
-                         name="start_date[]" placeholder="Start Date" autocomplete="off">
-              </td>
-              <td>
-                  <input type="text" class="form-control end-date"
-                         name="end_date[]" placeholder="End Date" autocomplete="off">
-              </td>
-              <td class="days-diff text-center">1</td>
-              <td class="text-center">
-                  <button type="button" class="btn btn-sm btn-danger" onclick="removeFieldActivityRequest(this)">
-                      <i class="fa fa-trash"></i>
-                  </button>
-              </td>
-          </tr>
-      `);
-
-        $tbody.append(newRow);
-
-        recalculateKeyProcessBalances();
-
-        $("#taskInputs .set-credit-points").each(function () {
-            $(this).removeClass("is-invalid");
-            const $row = $(this).closest("tr");
-            $row.find(".credit-points-error").remove();
-        });
-
-        // re-init datepickers for new row
-        initDatePickersActivityRequest(newRow);
-
-        // recalc totals
-        calculateTotalDaysFunctionActivityRequest();
-
-        const projectId = $("#project_id").val();
-        const $newDropdown = newRow.find(".key-process-dropdown");
-
-        if (projectId && $newDropdown.length) {
-            loadKeyProcessesForDropdown(projectId, $newDropdown);
-        }
-    }
-
-    function removeFieldActivityRequest(button) {
-        const $row = $(button).closest("tr");
-        const $tbody = $row.closest("tbody");
-        $row.remove();
-
-        // Re-number rows
-        $tbody.find("tr").each(function(index) {
-            const $cells = $(this).find("td");
-            if ($cells.length > 1) {
-                $cells.eq(0).text(index + 1);
-            }
-        });
-
-        // Recalculate task totals if applicable
-        if ($tbody.attr("id") === "taskInputs") {
-            calculateTotalDaysFunctionActivityRequest();
-        }
-
-        recalculateKeyProcessBalances();
-    }
-
-    // --- Date validation helpers ---
-    function showDateErrorActivityRequest($row, message) {
-        let $err = $row.find('.date-error');
-        if (!$err.length) {
-            $err = $('<div class="date-error text-danger small mt-1"></div>');
-            $row.find('.end-date').closest('td').append($err);
-        }
-        $err.text(message);
-    }
-
-    function clearDateError($row) {
-        $row.find('.date-error').remove();
-    }
-
-    function daysBetweenActivityRequest(start, end) {
-        const s = new Date(start).setHours(0, 0, 0, 0);
-        const e = new Date(end).setHours(0, 0, 0, 0);
-        return ((e - s) / (1000 * 60 * 60 * 24)) + 1; // inclusive
-    }
-
-    function calculateDaysActivityRequest($row) {
-        const startPicker = $row.find('.start-date')[0]?._flatpickr;
-        const endPicker = $row.find('.end-date')[0]?._flatpickr;
-        if (startPicker && endPicker && startPicker.selectedDates[0] && endPicker.selectedDates[0]) {
-            const start = startPicker.selectedDates[0];
-            const end = endPicker.selectedDates[0];
-            const diff = daysBetweenActivityRequest(start, end);
-            $row.find('.days-diff').text(diff >= 0 ? diff : 0);
-        }
-        calculateTotalDaysFunctionActivityRequest();
-    }
-
-    function calculateTotalDaysFunctionActivityRequest() {
-        let earliest = null;
-        let latest = null;
-
-        $("#taskInputs tr").each(function() {
-            const startPicker = $(this).find('.start-date')[0]?._flatpickr;
-            const endPicker = $(this).find('.end-date')[0]?._flatpickr;
-
-            if (startPicker && endPicker && startPicker.selectedDates[0] && endPicker.selectedDates[0]) {
-                const start = startPicker.selectedDates[0];
-                const end = endPicker.selectedDates[0];
-
-                if (!earliest || start < earliest) earliest = start;
-                if (!latest || end > latest) latest = end;
-            }
-        });
-
-        if (earliest && latest) {
-            const diff = daysBetweenActivityRequest(earliest, latest);
-            $(".total-days").text(diff >= 0 ? diff : 0);
-        } else {
-            $(".total-days").text(0);
-        }
-    }
-
-    function addAttachmentRowActivityRequest() {
-        const table = document.getElementById("attachmentsTable");
-        const rowCount = table.rows.length - 1; // exclude last "Add File" row
-        const newRow = table.insertRow(rowCount);
-
-        // No data-attachment-id for new uploads
-        newRow.dataset.attachmentId = "";
-
-        newRow.innerHTML = `
-        <td class="text-end">${rowCount + 1}</td>
-        <td>
-            <input type="file" class="form-control" name="attachments[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
-        </td>
-        <td>
-            <textarea class="form-control" name="attachment_description[]" rows="2" placeholder="Enter description (optional)" maxlength="500"></textarea>
-        </td>
-        <td class="text-center">
-            <button type="button" class="btn btn-sm btn-secondary" onclick="handleDownloadActivityRequest(this)">
-                <i class="fa fa-download"></i>
-            </button>
-        </td>
-        <td class="text-center">
-            <button type="button" class="btn btn-sm btn-danger" onclick="removeAttachmentRowActivityRequest(this)">
-                <i class="fa fa-trash"></i>
-            </button>
-        </td>
-    `;
-    }
-
-    // Handler for download button
-    function handleDownloadActivityRequest(button) {
-        const row = button.closest("tr");
-        const attachmentId = row.dataset.attachmentId;
-        const fileName = row.cells[1].innerText.trim();
-
-        if (!attachmentId || !fileName) {
-            alert("File not uploaded yet.");
+        if (!form.checkValidity()) {
+            form.reportValidity();
             return;
         }
 
-        const fileUrl = `/download/${fileName}`;
-        // Auto-detect file type
-        const ext = fileName.split('.').pop().toLowerCase();
-        if (["pdf", "png", "jpg", "jpeg"].includes(ext)) {
-            window.open(fileUrl, "_blank"); // open in new tab
-        } else {
-            const a = document.createElement("a");
-            a.href = fileUrl;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        }
-    }
-
-    function removeAttachmentRowActivityRequest(btn) {
-        let row = btn.closest("tr");
-        row.parentNode.removeChild(row);
-
-        // Re-number rows
-        let table = document.getElementById("attachmentsTable");
-        for (let i = 0; i < table.rows.length - 1; i++) {
-            table.rows[i].cells[0].innerText = i + 1;
-        }
-    }
-
-    function initDatePickersActivityRequest(context) {
-
-        context = (context instanceof jQuery) ? context : $(context);
-
-        const today = new Date().toISOString().split("T")[0];
-
-        // --------------------------------------------------
-        // Initialise every standalone date field once
-        // --------------------------------------------------
-
-        $(".date-picker").each(function () {
-
-            if (this._flatpickr) {
-                return;
-            }
-
-            flatpickr(this, {
-                enableTime: false,
-                dateFormat: "Y-m-d",
-                allowInput: true,
-                defaultDate: this.value || today,
-                maxDate: "today"
-            });
-        });
-
-        let rows = context.is("tr") ? context : context.find("tr");
-
-        rows.each(function() {
-            const $row = $(this);
-            const startElem = $row.find(".start-date")[0];
-            const endElem = $row.find(".end-date")[0];
-            if (!startElem || !endElem) return;
-
-            // --- Start date ---
-            if (!startElem._flatpickr) {
-                flatpickr(startElem, {
-                    enableTime: false,
-                    dateFormat: "Y-m-d",
-                    allowInput: true,
-                    defaultDate: startElem.value ? startElem.value : today, // use today if empty
-                    onChange: function(selectedDates) {
-                        const startDate = selectedDates[0];
-                        const endPicker = endElem._flatpickr;
-
-                        if (startDate && endPicker && endPicker.selectedDates[0]) {
-                            if (endPicker.selectedDates[0] < startDate) {
-                                endPicker.setDate(startDate, false);
-                                showDateErrorActivityRequest($row, "End Date cannot be earlier than Start Date. Adjusted automatically.");
-                            } else {
-                                clearDateError($row);
-                            }
-                        }
-                        calculateDaysActivityRequest($row);
-                    }
-                });
-            }
-
-            // --- End date ---
-            if (!endElem._flatpickr) {
-                flatpickr(endElem, {
-                    enableTime: false,
-                    dateFormat: "Y-m-d",
-                    allowInput: true,
-                    defaultDate: endElem.value ? endElem.value : today, // use today if empty
-                    onChange: function(selectedDates) {
-                        const endDate = selectedDates[0];
-                        const startPicker = startElem._flatpickr;
-
-                        if (endDate && startPicker && startPicker.selectedDates[0]) {
-                            if (endDate < startPicker.selectedDates[0]) {
-                                this.setDate(startPicker.selectedDates[0], false);
-                                showDateErrorActivityRequest($row, "End Date cannot be earlier than Start Date. Adjusted automatically.");
-                            } else {
-                                clearDateError($row);
-                            }
-                        }
-                        calculateDaysActivityRequest($row);
-                    }
-                });
-            }
-        });
-    }
-
-    // --- Prevent duplicate team member selection ---
-    function updateTeamMemberDropdowns() {
-        const allSelects = document.querySelectorAll('select[name="team_member_names"]');
-        const selectedValues = Array.from(allSelects)
-            .map(sel => sel.value)
-            .filter(v => v !== "");
-
-        allSelects.forEach(select => {
-            const currentValue = select.value;
-            select.querySelectorAll('option').forEach(opt => {
-                // Re-enable all first
-                opt.disabled = false;
-                // Disable options already chosen elsewhere
-                if (selectedValues.includes(opt.value) && opt.value !== currentValue) {
-                    opt.disabled = true;
-                }
-            });
-        });
-    }
-
-    // Bind events for dynamically created dropdowns
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.name === 'team_member_names') {
-            updateTeamMemberDropdowns();
-        }
-    });
-
-    // Modify addTeamMember to refresh dropdowns
-    // const originalAddTeamMember = window.addTeamMember;
-    var originalAddTeamMember = window.originalAddTeamMember || window.addTeamMember;
-    window.originalAddTeamMember = originalAddTeamMember;
-
-    window.addTeamMember = function() {
-        if (typeof originalAddTeamMember === 'function') {
-            originalAddTeamMember();
-        }
-        updateTeamMemberDropdowns();
-    };
-
-    // Modify removeFieldActivityRequest to refresh dropdowns after removing a row
-    //const originalremoveFieldActivityRequest = window.removeFieldActivityRequest;
-    var originalremoveFieldActivityRequest = window.originalremoveFieldActivityRequest || window.removeFieldActivityRequest;
-    window.originalremoveFieldActivityRequest = originalremoveFieldActivityRequest;
-    window.removeFieldActivityRequest = function(button) {
-        if (typeof originalremoveFieldActivityRequest === 'function') {
-            originalremoveFieldActivityRequest(button);
-        }
-        updateTeamMemberDropdowns();
-    };
-
-    // Initial refresh
-    document.addEventListener('DOMContentLoaded', updateTeamMemberDropdowns);
-
-    function saveActivityRequest() {
-        // --- Overview fields ---
-        const overview = {
-            project_id: $("#project_id").val(),
-            registration_no: $("#registration_no").val(),
-            date_of_registration: $("#date_of_registration").val(),
-            place_of_registration: $("#place_of_registration").val(),
-            stakeholders: $("#stakeholders").val(),
-            deliverables: $("#deliverables").val(),
-            assumptions: $("#assumptions").val()
+        const form_data = {
+            vehicle_id: $("#vehicle_id").val().trim(),
+            registration_no: $("#registration_no").val().trim(),
+            date_of_registration: $("#date_of_registration").val().trim(),
+            place_of_registration: $("#place_of_registration").val().trim(),
+            vehicle_condition_id: $("#vehicle_condition_id").val().trim(),
+            vehicle_make_id: $("#vehicle_make_id").val().trim(),
+            vehicle_model_id: $("#vehicle_model_id").val().trim(),
+            vehicle_country_of_origin_id: $("#vehicle_country_of_origin_id").val().trim(),
+            vehicle_body_description_id: $("#vehicle_body_description_id").val().trim(),
+            vehicle_colour_id: $("#vehicle_colour_id").val().trim(),
+            vehicle_year_of_manufacture_id: $("#vehicle_year_of_manufacture_id").val().trim(),
+            vehicle_classification_id: $("#vehicle_classification_id").val().trim(),
+            vehicle_fuel_type_id: $("#vehicle_fuel_type_id").val().trim(),
+            vehicle_power: parseFloat($("#vehicle_power").val().replace(/,/g, "")) || 0,
+            vehicle_engine_no: $("#vehicle_engine_no").val().trim(),
+            vehicle_chasis_no: $("#vehicle_chasis_no").val().trim(),
+            vehicle_net_weight: parseFloat($("#vehicle_net_weight").val().replace(/,/g, "")) || 0,
+            vehicle_gross_weight: parseFloat($("#vehicle_gross_weight").val().replace(/,/g, "")) || 0,
+            vehicle_tyre_size_id: $("#vehicle_tyre_size_id").val().trim(),
+            vehicle_wheels_no: $("#vehicle_wheels_no").val().trim(),
+            vehicle_axles_no: $("#vehicle_axles_no").val().trim(),
+            vehicle_seating_capacity: $("#vehicle_seating_capacity").val().trim(),
+            vehicle_purpose_id: $("#vehicle_purpose_id").val().trim(),
+            vehicle_ownership_category_id: $("#vehicle_ownership_category_id").val().trim(),
+            vehicle_owner_tin_id: $("#vehicle_owner_tin_id").val().trim(),
+            vehicle_owner_name_id: $("#vehicle_owner_name_id").val().trim(),
+            vehicle_district_id: $("#vehicle_district_id").val().trim(),
+            vehicle_county_id: $("#vehicle_county_id").val().trim(),
+            vehicle_owner_postal_address_id: $("#vehicle_owner_postal_address_id").val().trim(),
+            vehicle_responsible_personnel_id: $("#vehicle_responsible_personnel_id").val().trim(),
+            vehicle_user_id: $("#vehicle_user_id").val().trim()
         };
-
-        // --- Team members ---
-        const team = [];
-        $("#teamCompositionInputs tr").each(function() {
-            const member_id = $(this).find("select[name='team_member_names']").val();
-            const role_id = $(this).find("select[name='team_member_role']").val();
-            if (member_id && role_id) {
-                team.push({
-                    member_id,
-                    role_id
-                });
-            }
-        });
-
-        // --- Tasks ---
-        const tasks = [];
-        $("#taskInputs tr").each(function() {
-            const task = $(this).find("textarea[name='task[]']").val();
-            const keyProcess = $(this).find("select[name='key_process_names']").val();
-
-            const creditPointsVal = $(this).find(".set-credit-points").val()?.trim() || "0";
-            const creditPoints = parseInt(creditPointsVal.replace(/,/g, ""), 10) || 0;
-
-            const startDate = $(this).find("input.start-date").val();
-            const endDate = $(this).find("input.end-date").val();
-            const days = $(this).find(".days-diff").text();
-
-            if (task && keyProcess && startDate && endDate) {
-                tasks.push({
-                    task,
-                    key_process: keyProcess,
-                    credit_points: creditPoints,
-                    start_date: startDate,
-                    end_date: endDate,
-                    days: parseInt(days)
-                });
-            }
-        });
 
         // --- FormData for files & text ---
         const formData = new FormData();
 
         // Add structured data
         const payload = {
-            overview,
-            team,
-            tasks,
-            activity_mode: window.activityRequestMode // send the global mode
+            form_data
         };
 
-        if (currentActivityRequestId !== 0) {
-            payload.vehicle_id = currentActivityRequestId;
-        }
         formData.append("data", JSON.stringify(payload));
 
-        // --- Attachments ---
-        const retainedAttachmentIds = [];
-        $("#attachmentsTable tr").each(function() {
-            const fileInput = $(this).find("input[type='file']")[0];
-            const desc = $(this).find("textarea[name='attachment_description[]']").val();
-            const attachmentId = $(this).data("attachment-id");
+        // --- Determine URL based on current window.currentVehicleId ---
+        console.log(window.currentVehicleId)
+        const url = window.currentVehicleId === 0 ?
+            "/register-vehicle" :
+            "/update-vehicle-details";
 
-            if (attachmentId) {
-                retainedAttachmentIds.push(attachmentId);
-            }
-
-            if (fileInput && fileInput.files.length > 0) {
-                formData.append("attachments", fileInput.files[0]);
-                formData.append("attachment_descriptions", desc || "");
-            }
-        });
-
-        if (currentActivityRequestId !== 0) {
-            formData.append("retained_attachment_ids", JSON.stringify(retainedAttachmentIds));
-        }
-
-        // --- Determine URL based on currentActivityRequestId ---
-        const url = currentActivityRequestId === 0 ?
-            "/save_activity_request" :
-            "/update_activity_request";
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
         // --- AJAX request ---
         $.ajax({
             url: url,
             type: "POST",
+            headers: {"X-CSRFToken": csrfToken},
             data: formData,
             processData: false,
             contentType: false,
@@ -1520,7 +1163,7 @@ taskRows.each(function() {
                 showFlashMessage(response.message, "success");
 
                 // Reset ID after successful save to avoid accidental updates
-                currentActivityRequestId = 0;
+                window.currentVehicleId = 0;
 
                 $("#flashMessageModal").off("hidden.bs.modal").on("hidden.bs.modal", function() {
                     location.reload();
@@ -1670,20 +1313,22 @@ taskRows.each(function() {
 
     $(document).ready(function() {
 
-        // --- Reset global tracker ---
-        currentActivityRequestId = 0;
+        window.currentVehicleId = Number($("#vehicle_id").val().trim()) || 0;
 
-        // --- Clear hidden ID field ---
+        const $form = $("#vehicleRegisterForm");
+
+        if (!$form.length) {
+            return;
+        }
+
+        // Clear hidden ID field
         $("#vehicle_id").val("");
 
-        // --- Reset all form inputs, selects, and textareas ---
-        $("#vehicleRegisterForm")[0].reset();
+        // Reset all form inputs, selects, and textareas
+        $form[0].reset();
 
-        $("#project_id").off("change").on("change", function () {
-            loadKeyProcesses($(this).val());
-        });
-
-        initDatePickersActivityRequest($('#taskInputs'));
+        // Initialize date picker
+        initDatePickersVehicleRegister($form);
 
         // Rotate caret icons on accordion expand/collapse
         $(document).off("show.bs.collapse", "#accordionSectionA .collapse").on("show.bs.collapse", "#accordionSectionA .collapse", function() {
@@ -1835,259 +1480,271 @@ taskRows.each(function() {
             }).draw();
         });
 
-    // Populate saved activity request
-    $(document).off("click", ".edit-saved-activity-request-btn").on("click", ".edit-saved-activity-request-btn", function() {
+// =====================================================
+// Edit Saved Vehicle
+// =====================================================
 
-        const activityId = $(this).attr("saved-activity-request-id");
+$(document)
+    .off(
+        "click.vehicleRegister",
+        ".edit-saved-vehicle-btn"
+    )
+    .on(
+        "click.vehicleRegister",
+        ".edit-saved-vehicle-btn",
+        function () {
 
-        currentActivityRequestId = activityId;
+            const vehicleId =
+                Number($(this).data("saved-vehicle-id")) || 0;
 
-        let projectId = null;
+            if (!vehicleId) {
 
-        $.ajax({
-            url: "/get-saved-activity-request-details",
-            type: "GET",
-            data: {
-                vehicle_id: activityId
-            },
-            success: function(data) {
-                // assign the variable: projectId
-                projectId = data.project_code;
-                // Populate modal fields
-                $("#project_id").val(data.project_code);
-                $("#registration_no").val(data.registration_no);
-                $("#date_of_registration").val(data.date_of_registration);
-                $("#place_of_registration").val(data.place_of_registration);
-                $("#stakeholders").val(data.stakeholders);
-                $("#deliverables").val(data.deliverables);
-                $("#assumptions").val(data.assumptions);
-            },
-            error: function() {
-                showFlashMessage("Failed to load saved activity request details. Please try again.", "danger");
+                showFlashMessage(
+                    "Invalid vehicle ID.",
+                    "danger"
+                );
+
+                return;
             }
-        });
 
-        // Load team composition separately
-        $.ajax({
-            url: "/get-activity-team-composition-details",
-            type: "GET",
-            data: {
-                vehicle_id: activityId
-            },
-            success: function(response) {
-                if (response.team && response.team.length > 0) {
-                    const $tbody = $("#teamCompositionInputs");
-                    $tbody.empty(); // clear old rows
+            window.currentVehicleId = vehicleId;
 
-                    response.team.forEach((member, index) => {
-                        const newRow = $(`
-                            <tr>
-                                <td class="text-end">${index + 1}</td>
-                                <td>
-                                    <select class="form-control" name="team_member_names">
-                                        {{ user_options | safe }}
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-control" name="team_member_role">
-                                        {{ team_role_options | safe }}
-                                    </select>
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeFieldActivityRequest(this)">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `);
+            $("#vehicle_id").val(vehicleId);
 
-                        // Pre-select saved values
-                        newRow.find("select[name='team_member_names']").val(member.member_user_id);
-                        newRow.find("select[name='team_member_role']").val(member.member_role_id);
 
-                        $tbody.append(newRow);
-                    });
-                } else {
-                    showFlashMessage("No team members found for this request.", "warning");
-                }
-            },
-            error: function(xhr) {
-                showFlashMessage(xhr.responseJSON?.error || "Failed to load team members.", "danger");
-            }
-        });
+            // =================================================
+            // Load saved vehicle
+            // =================================================
 
-        // Load tasks of activity request
-        $.ajax({
-            url: "/get-activity-tasks-details",
-            type: "GET",
-            data: {
-                vehicle_id: activityId
-            },
-            success: function(response) {
-                if (response.tasks && response.tasks.length > 0) {
-                    const $tbody = $("#taskInputs");
-                    $tbody.empty(); // clear old rows
+            $.ajax({
+                url: "/get-saved-vehicle-details",
+                type: "GET",
+                data: {
+                    vehicle_id: vehicleId
+                },
 
-                    response.tasks.forEach((task, index) => {
-                        // Format dates to match Flatpickr’s Y-m-d
-                        const startDate = task.start_date ? new Date(task.start_date).toISOString().split('T')[0] : '';
-                        const endDate = task.end_date ? new Date(task.end_date).toISOString().split('T')[0] : '';
+                success: function (data) {
 
-                        const newRow = $(`
-                            <tr>
-                                <td class="text-end">${index + 1}</td>
-                                <td>
-                                    <textarea class="form-control" name="task[]" rows="2"
-                                        placeholder="Enter task name" maxlength="150">${task.task || ''}</textarea>
-                                </td>
-                                <td>
-                                    <select class="form-control key-process-dropdown" name="key_process_names">
-                                        <option value="">Select a Key Process</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="text"
-                                       class="form-control available-credit-points"
-                                       name="available_credit_points[]"
-                                       value="${task.available_credit_points || 0}"
-                                       data-original="${task.available_credit_points || 0}"
-                                       style="text-align: right;"
-                                       inputmode="numeric"
-                                       pattern="[0-9,]+"
-                                       required disabled>
-                                </td>
-                                <td>
-                                    <input type="text"
-                                       class="form-control set-credit-points"
-                                       name="set_credit_points"
-                                       value=${task.credit_points || 0}
-                                       style="text-align: right;"
-                                       inputmode="numeric"
-                                       pattern="[0-9,]+"
-                                       required>
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control start-date" name="start_date[]"
-                                        placeholder="Start Date" value="${startDate}" autocomplete="off">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control end-date" name="end_date[]"
-                                        placeholder="End Date" value="${endDate}" autocomplete="off">
-                                </td>
-                                <td class="days-diff text-center">1</td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeFieldActivityRequest(this)">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `);
+                    // -----------------------------------------
+                    // Vehicle ID
+                    // -----------------------------------------
 
-                        // Preselect key process if available
-                        newRow.find("select[name='key_process_names']").val(task.key_process_id);
+                    $("#vehicle_id").val(data.id);
 
-                        $tbody.append(newRow);
 
-                        const $dropdown = newRow.find(".key-process-dropdown");
+                    // -----------------------------------------
+                    // Section A
+                    // -----------------------------------------
 
-                        loadKeyProcessesForDropdown(
-                            projectId,
-                            $dropdown,
-                            task.key_process_id,
-                            activityId
+                    $("#registration_no")
+                        .val(data.registration_no);
+
+                    $("#date_of_registration")
+                        .val(data.registration_date);
+
+                    $("#place_of_registration")
+                        .val(data.place_of_registration);
+
+
+                    // -----------------------------------------
+                    // Section B
+                    // -----------------------------------------
+
+                    $("#vehicle_condition_id")
+                        .val(data.vehicle_condition_id);
+
+
+                    // -----------------------------------------
+                    // Section C
+                    // -----------------------------------------
+
+                    /*
+                     * IMPORTANT:
+                     *
+                     * Set the vehicle make first.
+                     * Then load its models.
+                     * Only after the models have loaded
+                     * should the saved model be selected.
+                     */
+
+                    $("#vehicle_make_id")
+                        .val(data.vehicle_make_id);
+
+                    loadVehicleModels(
+                        data.vehicle_make_id,
+                        data.vehicle_model_id
+                    );
+
+
+                    $("#vehicle_country_of_origin_id")
+                        .val(data.vehicle_country_of_origin_id);
+
+                    $("#vehicle_body_description_id")
+                        .val(data.vehicle_body_description_id);
+
+                    $("#vehicle_colour_id")
+                        .val(data.vehicle_colour_id);
+
+                    $("#vehicle_year_of_manufacture_id")
+                        .val(data.vehicle_year_of_manufacture_id);
+
+                    $("#vehicle_classification_id")
+                        .val(data.vehicle_classification_id);
+
+                    $("#vehicle_fuel_type_id")
+                        .val(data.vehicle_fuel_type_id);
+
+                    $("#vehicle_power")
+                        .val(data.vehicle_power);
+
+                    $("#vehicle_engine_no")
+                        .val(data.vehicle_engine_no);
+
+                    $("#vehicle_chasis_no")
+                        .val(data.vehicle_chasis_no);
+
+                    $("#vehicle_net_weight")
+                        .val(data.vehicle_net_weight);
+
+                    $("#vehicle_gross_weight")
+                        .val(data.vehicle_gross_weight);
+
+                    $("#vehicle_tyre_size_id")
+                        .val(data.vehicle_tyre_size_id);
+
+                    $("#vehicle_wheels_no")
+                        .val(data.vehicle_wheels_no);
+
+                    $("#vehicle_axles_no")
+                        .val(data.vehicle_axles_no);
+
+                    $("#vehicle_seating_capacity")
+                        .val(data.vehicle_seating_capacity);
+
+                    $("#vehicle_purpose_id")
+                        .val(data.vehicle_purpose_id);
+
+                    $("#vehicle_ownership_category_id")
+                        .val(data.vehicle_ownership_category_id);
+
+
+                    // -----------------------------------------
+                    // Section E
+                    // -----------------------------------------
+
+                    $("#vehicle_owner_tin_id")
+                        .val(data.vehicle_owner_tin_id);
+
+                    $("#vehicle_owner_name_id")
+                        .val(data.vehicle_owner_name_id);
+
+
+                    /*
+                     * IMPORTANT:
+                     *
+                     * Set district first.
+                     * Then load counties.
+                     * Only after counties have loaded
+                     * should the saved county be selected.
+                     */
+
+                    $("#vehicle_district_id")
+                        .val(data.vehicle_district_id);
+
+                    loadVehicleCounties(
+                        data.vehicle_district_id,
+                        data.vehicle_county_id
+                    );
+
+
+                    $("#vehicle_owner_postal_address_id")
+                        .val(data.vehicle_owner_postal_address_id);
+
+
+                    // -----------------------------------------
+                    // Section F
+                    // -----------------------------------------
+
+                    $("#vehicle_responsible_personnel_id")
+                        .val(data.vehicle_responsible_personnel_id);
+
+                    $("#vehicle_user_id")
+                        .val(data.vehicle_user_id);
+
+
+                    // -----------------------------------------
+                    // Refresh registration date picker
+                    // -----------------------------------------
+
+                    const dateField =
+                        document.getElementById(
+                            "date_of_registration"
                         );
-                    });
 
-                    // Reinitialize datepickers on loaded rows
-                    initDatePickersActivityRequest($tbody);
+                    if (dateField?._flatpickr) {
 
-                    // Recalculate days per row based on loaded start/end values
-                    $tbody.find("tr").each(function() {
-                        calculateDaysActivityRequest($(this));
-                    });
+                        dateField._flatpickr.setDate(
+                            data.registration_date,
+                            false
+                        );
 
-                    // Trigger day calculations
-                    calculateTotalDaysFunctionActivityRequest();
-                } else {
-                    showFlashMessage("No tasks found for this request.", "warning");
+                    } else {
+
+                        /*
+                         * Safety fallback in case the page was
+                         * loaded through SPA navigation before
+                         * the date picker was initialized.
+                         */
+
+                        if (
+                            typeof initDatePickersVehicleRegister ===
+                            "function"
+                        ) {
+
+                            initDatePickersVehicleRegister(
+                                document
+                            );
+
+                        }
+
+                        if (dateField?._flatpickr) {
+
+                            dateField._flatpickr.setDate(
+                                data.registration_date,
+                                false
+                            );
+                        }
+                    }
+
+
+                    // -----------------------------------------
+                    // Scroll to vehicle form
+                    // -----------------------------------------
+
+                    const formTop =
+                        $("#vehicleRegisterForm").offset();
+
+                    if (formTop) {
+
+                        $("html, body").animate(
+                            {
+                                scrollTop: formTop.top
+                            },
+                            "fast"
+                        );
+                    }
+                },
+
+                error: function () {
+
+                    showFlashMessage(
+                        "Failed to load saved vehicle details. Please try again.",
+                        "danger"
+                    );
                 }
-            },
-            error: function(xhr) {
-                showFlashMessage(xhr.responseJSON?.error || "Failed to load tasks.", "danger");
-            }
-        });
-
-        // Load attachments
-        $.ajax({
-            url: "/get-activity-attachments",
-            type: "GET",
-            data: {
-                vehicle_id: activityId
-            },
-            success: function(response) {
-                const attachments = response.attachments || [];
-                const $tbody = $("#attachmentsTable");
-                $tbody.empty(); // clear any existing rows
-
-                if (attachments.length > 0) {
-                    attachments.forEach((att, index) => {
-                        const fileUrl = `/download/${att.file}`; // adjust if uploads folder is elsewhere
-                        const newRow = $(`
-                            <tr data-attachment-id="${att.id}">
-                                <td class="text-end">${index + 1}</td>
-                                <td class="file-cell">
-                                    <span class="file-name" title="${att.file}">
-                                        ${att.file}
-                                    </span>
-                                </td>
-                                <td>
-                                    <textarea class="form-control" name="attachment_description[]" rows="2"
-                                        placeholder="Enter description (optional)" maxlength="500">${att.description || ''}</textarea>
-                                </td>
-                                <td class="text-center">
-                                    <a href="${fileUrl}" class="btn btn-sm btn-secondary"
-                                       ${att.file.toLowerCase().match(/\.(pdf|png|jpg|jpeg)$/) ? 'target="_blank"' : 'download'}>
-                                        <i class="fa fa-download"></i>
-                                    </a>
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeAttachmentRowActivityRequest(this)">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `);
-                        $tbody.append(newRow);
-                    });
-                } else {
-                    // If no attachments exist, show an empty file input row
-                    const emptyRow = $(`
-                        <tr>
-                            <td class="text-end">1</td>
-                            <td><input type="file" class="form-control" name="attachments[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"></td>
-                            <td><textarea class="form-control" name="attachment_description[]" rows="2" placeholder="Enter description (optional)" maxlength="500"></textarea></td>
-                            <td class="text-center"><button type="button" class="btn btn-sm btn-danger" onclick="removeAttachmentRowActivityRequest(this)"><i class="fa fa-trash"></i></button></td>
-                        </tr>
-                    `);
-                    $tbody.append(emptyRow);
-                }
-
-                // Always append the "Add File" row at the end
-                $tbody.append(`
-                    <tr>
-                        <td colspan="5" class="text-end">
-                            <button type="button" class="btn-outline-custom float-end" onclick="addAttachmentRowActivityRequest()">
-                                <i class="fa fa-plus"></i> Add File
-                            </button>
-                        </td>
-                    </tr>
-                `);
-            },
-            error: function(xhr) {
-                showFlashMessage(xhr.responseJSON?.error || "Failed to load attachments.", "danger");
-            }
-        });
-    });
+            });
+        }
+    );
 
     function resetPage() {
         let modalTitle = "";
@@ -2099,7 +1756,7 @@ taskRows.each(function() {
         $("#confirmAction").off("click").on("click", function() {
             $("#confirmationModal").modal("hide");
             // --- Reset global tracker ---
-            currentActivityRequestId = 0;
+            window.currentVehicleId = 0;
 
             // --- Clear hidden ID field ---
             $("#vehicle_id").val("");
@@ -2162,8 +1819,8 @@ taskRows.each(function() {
             $(".total-days").text("1");
 
             // Reinitialize Flatpickr on newly inserted date inputs
-            if (typeof initDatePickersActivityRequest === "function") {
-                initDatePickersActivityRequest($taskBody);
+            if (typeof initDatePickersVehicleRegister === "function") {
+                initDatePickersVehicleRegister($taskBody);
             }
 
             // --- Clear and repopulate Attachments section ---
@@ -2253,6 +1910,139 @@ taskRows.each(function() {
     $("#closeViewRequest").click(function() {
         $("#viewRequestCard").slideUp();
     });
+
+// =====================================================
+// Load Vehicle Models
+// =====================================================
+
+function loadVehicleModels(vehicleMakeId, selectedModelId = null) {
+
+    const $modelSelect = $("#vehicle_model_id");
+
+    $modelSelect
+        .empty()
+        .append('<option value="">Select Vehicle Manufacturer\'s Model</option>');
+
+    if (!vehicleMakeId) {
+        return $.Deferred().resolve().promise();
+    }
+
+    return $.ajax({
+        url: `/get-vehicle-models/${vehicleMakeId}`,
+        type: "GET"
+    })
+    .done(function (data) {
+
+        $.each(data, function (index, item) {
+
+            $modelSelect.append(
+                `<option value="${item.id}">
+                    ${item.name}
+                </option>`
+            );
+        });
+
+        // Select the saved model only AFTER
+        // the options have been loaded.
+        if (selectedModelId !== null && selectedModelId !== undefined) {
+            $modelSelect.val(String(selectedModelId));
+        }
+    })
+    .fail(function () {
+
+        showFlashMessage(
+            "Failed to load vehicle manufacturer's models.",
+            "danger"
+        );
+    });
+}
+
+// =====================================================
+// Vehicle Make Change
+// =====================================================
+
+$(document)
+    .off(
+        "change.vehicleRegister",
+        "#vehicle_make_id"
+    )
+    .on(
+        "change.vehicleRegister",
+        "#vehicle_make_id",
+        function () {
+
+            const vehicleMakeId = $(this).val();
+
+            loadVehicleModels(vehicleMakeId);
+        }
+    );
+
+// =====================================================
+// Load Vehicle Owner Counties
+// =====================================================
+
+function loadVehicleCounties(districtId, selectedCountyId = null) {
+
+    const $countySelect = $("#vehicle_county_id");
+
+    $countySelect
+        .empty()
+        .append('<option value="">Select Vehicle Owner\'s County</option>');
+
+    if (!districtId) {
+        return $.Deferred().resolve().promise();
+    }
+
+    return $.ajax({
+        url: `/get-counties/${districtId}`,
+        type: "GET"
+    })
+    .done(function (data) {
+
+        $.each(data, function (index, item) {
+
+            $countySelect.append(
+                `<option value="${item.id}">
+                    ${item.name}
+                </option>`
+            );
+        });
+
+        // Select saved county only AFTER
+        // county options have been populated.
+        if (selectedCountyId !== null && selectedCountyId !== undefined) {
+            $countySelect.val(String(selectedCountyId));
+        }
+    })
+    .fail(function () {
+
+        showFlashMessage(
+            "Failed to load counties.",
+            "danger"
+        );
+    });
+}
+
+
+// =====================================================
+// Vehicle District Change
+// =====================================================
+
+$(document)
+    .off(
+        "change.vehicleRegister",
+        "#vehicle_district_id"
+    )
+    .on(
+        "change.vehicleRegister",
+        "#vehicle_district_id",
+        function () {
+
+            const districtId = $(this).val();
+
+            loadVehicleCounties(districtId);
+        }
+    );
 </script>
 
 <style>
