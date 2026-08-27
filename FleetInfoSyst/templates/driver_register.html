@@ -203,6 +203,13 @@ window.validationFieldsDriverRegister = [
         selector: "#first_issue",
         type: "date",
         requiredMessage: "First Issue date cannot be left blank."
+    },
+    {
+        selector: "#uetcl_permit_no",
+        type: "text",
+        regex: window.textRegexDriverRegister,
+        requiredMessage: "UETCL Permit ID cannot be left blank.",
+        invalidMessage: "UETCL Permit ID contains invalid characters."
     }
 ];
 
@@ -257,6 +264,13 @@ window.validationFieldsDriverRegisterEdit = [
         selector: "#edit_driver_in_register_first_issue",
         type: "date",
         requiredMessage: "First Issue date cannot be left blank."
+    },
+    {
+        selector: "#edit_uetcl_permit_no",
+        type: "text",
+        regex: window.textRegexDriverRegister,
+        requiredMessage: "UETCL Permit ID cannot be left blank.",
+        invalidMessage: "UETCL Permit ID contains invalid characters."
     }
 ];
 
@@ -813,7 +827,8 @@ function initializeLicenceDateRules() {
             issue_country_id: $("#issued_by").val().trim(),
             licence_no: $("#licence_no").val().trim(),
             issue_no: $("#issue_no").val().trim(),
-            first_issue_date: $("#first_issue").val().trim()
+            first_issue_date: $("#first_issue").val().trim(),
+            uetcl_permit_no: $("#uetcl_permit_no").val().trim()
         };
 
         const licence_codes = [];
@@ -910,7 +925,8 @@ function initializeLicenceDateRules() {
             issue_country_id: $("#edit_driver_in_register_issued_by").val().trim(),
             licence_no: $("#edit_driver_in_register_licence_no").val().trim(),
             issue_no: $("#edit_driver_in_register_issue_no").val().trim(),
-            first_issue_date: $("#edit_driver_in_register_first_issue").val().trim()
+            first_issue_date: $("#edit_driver_in_register_first_issue").val().trim(),
+            uetcl_permit_no: $("#edit_uetcl_permit_no").val().trim()
         };
 
         const licence_codes = [];
@@ -1015,6 +1031,7 @@ function initializeLicenceDateRules() {
                 $("#edit_driver_in_register_licence_no").val(data.licence_no);
                 $("#edit_driver_in_register_issue_no").val(data.issue_no);
                 $("#edit_driver_in_register_first_issue").val(data.first_issue ? new Date(data.first_issue).toISOString().split("T")[0] : "");
+                $("#edit_uetcl_permit_no").val(data.uetcl_permit_no);
 
                 // Show the modal
                 $("#driverRegisterEditModal").modal("show");
